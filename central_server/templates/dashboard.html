@@ -1,0 +1,14 @@
+<h2>Routers and Devices</h2>
+{% for router in routers %}
+    <h3>{{ router.name }} ({{ router.ip_address }})</h3>
+    <ul>
+        {% for device in router.devices %}
+            <li>
+                {{ device.name }} (MAC: {{ device.mac_address }})
+                <a href="{{ url_for('main.block', mac=device.mac_address) }}">Block</a>
+                <a href="{{ url_for('main.unblock', mac=device.mac_address) }}">Unblock</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+<a href="{{ url_for('auth.logout') }}">Logout</a>
