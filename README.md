@@ -17,6 +17,11 @@ The network monitoring system
 - ```sudo systemctl enable suricata```
 - ```sudo systemctl restart suricata```
 
+Main sections in the etc/suricata/suricata.yaml:
+- af-packet
+- default-rule-path
+- rule-files
+
 ### Testing
 - add alert to /etc/suricata/rules/custom.rules
 	- the alert is ```alert ip any any -> any any (msg:"GPL ATTACK_RESPONSE id check returned root"; content:"uid=0|28|root|29|"; classtype:bad-unknown; sid:2100498; rev:7; metadata:created_at 2010_09_23, updated_at 2010_09_23;)```
