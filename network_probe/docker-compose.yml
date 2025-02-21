@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  telegraf:
+    build: ./telegraf
+    container_name: rpi_telegraf
+    user: "995:990"
+    restart: always
+    environment:
+      - DOCKER_INFLUXDB_INIT_ORG=network-monitoring
+      - DOCKER_INFLUXDB_INIT_BUCKET=network-data
+    secrets:
+      - influx_token
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./telegraf/process_monitor.sh:/usr/local/bin/process_monitor.sh
+    depends_on:
+   #   - suricata
+      - softflowd
+    network_mode: "host"
+   # command: ["/bin/sh", "-c", "export INFLUX_TOKEN=$(cat /run/secrets/influx_token) && exec telegraf --config /etc/telegraf/telegraf.conf"]
+
+  #suricata:
+  #  build: ./suricata
+  #  container_name: rpi_suricata
+  #  restart: always
+  #  network_mode: "host"
+  #  cap_add:
+  #    - NET_ADMIN
+  #  volumes:
+  #    - ./suricata/suricata.yaml:/etc/suricata/suricata.yaml:ro
+  #    - ./suricata/rules/custom.rules:/etc/suricata/rules/custom.rules:ro
+  #    - /var/log/suricata:/var/log/suricata
+
+  softflowd:
+    build: ./softflowd
+    container_name: rpi_softflowd
+    restart: always
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+
+secrets:
+  influx_token:
+    file: ./secrets/influx_token.txt

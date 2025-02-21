@@ -1,0 +1,33 @@
+# Use a lightweight base image for Raspberry Pi
+FROM raspbian/stretch
+
+# Install necessary packages
+RUN apt-get update && apt-get install -y \
+    softflowd \
+    suricata \
+    telegraf \
+    python3 \
+    python3-pip \
+    sudo && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy the process monitoring script
+COPY process_monitor.sh /usr/local/bin/process_monitor.sh
+RUN chmod +x /usr/local/bin/process_monitor.sh
+
+# Set up Telegraf permissions
+RUN echo "telegraf ALL=(ALL) NOPASSWD: /usr/local/bin/process_monitor.sh" | sudo tee /etc/sudoers.d/010_telegraf_user
+
+# Copy Telegraf configuration
+COPY telegraf/telegraf.conf /etc/telegraf/telegraf.conf
+
+# Copy Suricata configuration
+#RUN suricata-update
+#COPY suricata/rules/custom.rules /etc/suricata/rules/custom.rules
+#COPY suricata/suricata.yaml /etc/suricata/suricata.yaml
+#RUN suricata -T -c /etc/suricata/suricata.yaml
+
+# Start services automatically
+CMD ["sh", "-c", "softflowd -i eth0 -n 127.0.0.1:2055 -v 10 -d && \
+   # suricata -c /etc/suricata/suricata.yaml -i eth0 && \
+    telegraf --config /etc/telegraf/telegraf.conf"]
