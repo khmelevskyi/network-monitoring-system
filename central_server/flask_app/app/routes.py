@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from decorators import admin_required
 from models import db, User, Router, Device
 from ssh_client import block_device, unblock_device
-from app import login_manager
+from app_init import login_manager
 
 auth_bp = Blueprint("auth", __name__)
 main_bp = Blueprint("main", __name__)

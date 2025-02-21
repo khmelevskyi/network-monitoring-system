@@ -169,3 +169,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+# Custom
+central_server/secrets/influxdb*
+central_server/secrets/postgres*
