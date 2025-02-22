@@ -1,18 +1,19 @@
-version: '3.8'
+version: '3.9'
 
 services:
   influxdb:
     image: influxdb:2
+    container_name: central_influxdb
     restart: unless-stopped
     ports:
-      - "8086:8086"
+      - "8087:8086"
     environment:
-      - DOCKER_INFLUXDB_INIT_MODE=setup
-      - DOCKER_INFLUXDB_INIT_USERNAME_FILE=/run/secrets/influxdb-admin-username
-      - DOCKER_INFLUXDB_INIT_PASSWORD_FILE=/run/secrets/influxdb-admin-password
-      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE=/run/secrets/influxdb-admin-token
-      - DOCKER_INFLUXDB_INIT_ORG=network-monitoring
-      - DOCKER_INFLUXDB_INIT_BUCKET=network-data
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb-admin-username
+      DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influxdb-admin-password
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
+      DOCKER_INFLUXDB_INIT_ORG: network-monitoring
+      DOCKER_INFLUXDB_INIT_BUCKET: network-data
     volumes:
       - influxdb-data:/var/lib/influxdb2
       - influxdb-config:/etc/influxdb2
@@ -22,19 +23,17 @@ services:
       - influxdb-admin-token
 
   postgres:
-    build:
-      context: ./postgres
-      dockerfile: Dockerfile
+    image: postgres:15
+    container_name: central_postgres
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
-      - POSTGRES_USER_FILE=/run/secrets/postgres-user
-      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
-      - POSTGRES_DB=network_monitor_central
+      POSTGRES_USER_FILE: /run/secrets/postgres-user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+      POSTGRES_DB: network_monitor_central
     ports:
-      - "5432:5432"
+      - "5433:5432"
     secrets:
       - postgres-user
       - postgres-password
@@ -43,15 +42,27 @@ services:
     build:
       context: ./flask_app
       dockerfile: Dockerfile
+    image: custom-flaskapp:latest
+    container_name: central_flask_app
     restart: unless-stopped
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/postgres-user
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: network_monitor_central
     volumes:
-      - ./flask_app:/app
+      - ./flask_app/src:/flask_app/src
+      - ./flask_app/migrations:/flask_app/migrations
     ports:
       - "5000:5000"
     depends_on:
       - influxdb
       - postgres
-    command: ["sh", "-c", "python3 -c 'from app.database import init_db; init_db()' && python3 app/main.py"]
+    secrets:
+      - postgres-user
+      - postgres-password
+
 
 volumes:
   influxdb-data:

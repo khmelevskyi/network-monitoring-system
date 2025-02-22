@@ -2,10 +2,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user, login_required
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 
-from decorators import admin_required
-from models import db, User, Router, Device
-from ssh_client import block_device, unblock_device
-from app_init import login_manager
+from src.decorators import admin_required
+from src.models import db, User, Router, Device
+from src.ssh_client import block_device, unblock_device
+from src.app import login_manager
 
 auth_bp = Blueprint("auth", __name__)
 main_bp = Blueprint("main", __name__)

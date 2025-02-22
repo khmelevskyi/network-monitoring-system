@@ -1,6 +1,6 @@
 import paramiko
 
-from config import SSH_HOST, SSH_USER, SSH_KEY_PATH
+from src.config import SSH_HOST, SSH_USER, SSH_KEY_PATH
 
 def execute_ssh_command(command):
     ssh = paramiko.SSHClient()

@@ -1,10 +1,13 @@
 FROM python:3.10
 
-WORKDIR /app
+WORKDIR /flask_app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY ./migrations/ ./migrations/
+COPY ./run.py .
+COPY ./src/ ./src/
 
-CMD ["sh", "-c", "python3 -c 'from app.database import init_db; init_db()' && python3 app/main.py"]
+#CMD ["sleep", "3600"]
+CMD ["sh", "-c", "flask --app src.app:create_app db upgrade && python3 run.py"]
