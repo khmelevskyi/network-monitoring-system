@@ -8,6 +8,8 @@ from src.ssh_client import execute_ssh_command
 from src.app import login_manager
 from src.influxdb_funcs import update_devices
 
+from src.config import SSH_PRIVATE_KEY_PATH
+
 
 auth_bp = Blueprint("auth", __name__)
 main_bp = Blueprint("main", __name__)
@@ -41,6 +43,13 @@ def logout():
     logout_user()
     return redirect(url_for("auth.login"))
 
+
+# Dashboard (Available to both users & admins)
+@main_bp.route("/")
+@login_required
+def first_page():
+    return redirect(url_for("main.dashboard"))
+
 # Dashboard (Available to both users & admins)
 @main_bp.route("/dashboard")
 @login_required
@@ -69,6 +78,7 @@ def create_initial_admin():
             flash("Initial admin user created successfully!", "success")
             return redirect(url_for('auth.login'))
 
+    flash("Sign up to create an initial admin", "info")
     return render_template("login.html")
 
 # Admin-Only Page
@@ -102,7 +112,7 @@ def create_user():
 @login_required
 def route_update_devices():
     update_devices()
-    return "Devices updated successfully"
+    return redirect(url_for("main.dashboard"))
 
 
 
@@ -115,15 +125,13 @@ def add_router():
         public_ip = request.form["public_ip"]
         local_ip = request.form["local_ip"]
         username = request.form["username"]
-        ssh_key_file = request.form["ssh_key_file"]  # Only filename
 
         # Store in DB
         new_router = Router(
             mac_address=rpi_mac,
             public_ip_address=public_ip,
             local_ip_address=local_ip,
-            username=username,
-            ssh_key_file=ssh_key_file
+            username=username
         )
         db.session.add(new_router)
         db.session.commit()
@@ -139,17 +147,32 @@ def add_router():
 def block_device(rpi_mac, mac):
     router = Router.query.filter_by(mac_address=rpi_mac).first()
     if not router:
-        return "Router not found", 404
+        flash("Router not found", "danger")
+        return redirect(url_for("main.dashboard"))
+
+    device = Device.query.filter_by(mac_address=mac).first()
+    if not device:
+        flash("Device not found", "danger")
+        return redirect(url_for("main.dashboard"))
+
+    if device.if_blocked == True:
+        flash("Device is already blocked", "warning")
+        return redirect(url_for("main.dashboard"))
 
     ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
     username = router.username
-    ssh_key_path = f"/{router.ssh_key_file}"
+    ssh_key_path = SSH_PRIVATE_KEY_PATH
+    print(ssh_key_path)
 
     # ssh_command = f"sudo iptables -A INPUT -m mac --mac-source {mac} -j DROP && sudo iptables -A FORWARD -m mac --mac-source {mac} -j DROP"
     ssh_command = "arp -e"
 
-    result = execute_ssh_command(ssh_command, "Blocked", ip, username, ssh_key_path)
+    result = execute_ssh_command(ssh_command, "Blocked", rpi_mac, mac, ip, username, ssh_key_path)
     print(result)
+
+    device.if_blocked = True
+    db.session.commit()
+
     flash(result, "info")
     return redirect(url_for("main.dashboard"))
 
@@ -159,15 +182,30 @@ def block_device(rpi_mac, mac):
 def unblock_device(rpi_mac, mac):
     router = Router.query.filter_by(mac_address=rpi_mac).first()
     if not router:
-        return "Router not found", 404
+        flash("Router not found", "danger")
+        return redirect(url_for("main.dashboard"))
+
+    device = Device.query.filter_by(mac_address=mac).first()
+    if not device:
+        flash("Device not found", "danger")
+        return redirect(url_for("main.dashboard"))
+
+    if device.if_blocked == False:
+        flash("Device is already unblocked", "warning")
+        return redirect(url_for("main.dashboard"))
 
     ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
     username = router.username
-    ssh_key_path = f"/{router.ssh_key_file}"
+    ssh_key_path = SSH_PRIVATE_KEY_PATH
 
-    ssh_command = f"sudo iptables -D INPUT -m mac --mac-source {mac} -j DROP && sudo iptables -D FORWARD -m mac --mac-source {mac} -j DROP"
+    # ssh_command = f"sudo iptables -D INPUT -m mac --mac-source {mac} -j DROP && sudo iptables -D FORWARD -m mac --mac-source {mac} -j DROP"
+    ssh_command = "arp -e"
 
-    result = execute_ssh_command(ssh_command, "Unblocked", ip, username, ssh_key_path)
+    result = execute_ssh_command(ssh_command, "Unblocked", rpi_mac, mac, ip, username, ssh_key_path)
     print(result)
+
+    device.if_blocked = False
+    db.session.commit()
+
     flash(result, "info")
     return redirect(url_for("main.dashboard"))

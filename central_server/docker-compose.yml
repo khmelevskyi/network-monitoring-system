@@ -6,36 +6,30 @@ services:
     container_name: central_influxdb
     restart: unless-stopped
     ports:
-      - "8087:8086"
+      - ${INFLUXDB_BIND_PORT}:8086
+    env_file:
+      .env
     environment:
-      DOCKER_INFLUXDB_INIT_MODE: setup
-      DOCKER_INFLUXDB_INIT_USERNAME_FILE: /run/secrets/influxdb-admin-username
-      DOCKER_INFLUXDB_INIT_PASSWORD_FILE: /run/secrets/influxdb-admin-password
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
-      DOCKER_INFLUXDB_INIT_ORG: network-monitoring
-      DOCKER_INFLUXDB_INIT_BUCKET: network-data
     volumes:
       - influxdb-data:/var/lib/influxdb2
       - influxdb-config:/etc/influxdb2
     secrets:
-      - influxdb-admin-username
-      - influxdb-admin-password
       - influxdb-admin-token
 
   postgres:
     image: postgres:15
     container_name: central_postgres
     restart: unless-stopped
+    ports:
+      - ${POSTGRES_BIND_PORT}:5432
+    env_file:
+      .env
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER_FILE: /run/secrets/postgres-user
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
-      POSTGRES_DB: network_monitor_central
-    ports:
-      - "5433:5432"
     secrets:
-      - postgres-user
       - postgres-password
 
   flask_app:
@@ -45,24 +39,24 @@ services:
     image: custom-flaskapp:latest
     container_name: central_flask_app
     restart: unless-stopped
+    ports:
+      - ${FLASK_BIND_PORT}:5000
+    env_file:
+      .env
     environment:
-      POSTGRES_USER_FILE: /run/secrets/postgres-user
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: network_monitor_central
+      SSH_PRIVATE_KEY_DOCKER_PATH: /run/secrets/ssh-private-key
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
     volumes:
       - ./flask_app/src:/flask_app/src
       - ./flask_app/migrations:/flask_app/migrations
-      - ./secrets:/run/secrets:ro
-    ports:
-      - "5000:5000"
     depends_on:
       - influxdb
       - postgres
     secrets:
-      - postgres-user
       - postgres-password
+      - ssh-private-key
+      - influxdb-admin-token
 
 
 volumes:
@@ -71,13 +65,9 @@ volumes:
   postgres-data:
 
 secrets:
-  influxdb-admin-username:
-    file: ./secrets/influxdb-admin-username.txt
-  influxdb-admin-password:
-    file: ./secrets/influxdb-admin-password.txt
   influxdb-admin-token:
-    file: ./secrets/influxdb-admin-token.txt
-  postgres-user:
-    file: ./secrets/postgres-user.txt
+    file: ${INFLUXDB_TOKEN_LOCAL_FILE}
   postgres-password:
-    file: ./secrets/postgres-password.txt
+    file: ${POSTGRES_PASSWORD_LOCAL_FILE}
+  ssh-private-key:
+    file: ${SSH_PRIVATE_KEY_LOCAL_PATH}

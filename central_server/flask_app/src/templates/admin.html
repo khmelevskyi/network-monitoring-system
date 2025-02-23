@@ -1,26 +1,53 @@
-<h2>Admin Panel</h2>
-<table>
-    <tr>
-        <th>Username</th>
-        <th>Role</th>
-    </tr>
-    {% for user in users %}
-    <tr>
-        <td>{{ user.username }}</td>
-        <td>{{ user.role }}</td>
-    </tr>
-    {% endfor %}
-</table>
+<!-- templates/admin.html -->
+{% extends 'base.html' %}
 
-<h3>Create New User</h3>
-<form method="POST" action="{{ url_for('main.create_user') }}">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <select name="role">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Create User</button>
-</form>
+{% block title %}Admin Panel{% endblock %}
 
-<a href="{{ url_for('main.dashboard') }}">Back to Dashboard</a>
+{% block content %}
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">{% block header %}Admin Panel{% endblock %}</h2>
+        <div>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+
+    <h3>Manage Users</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Role</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.role }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Create New User</h3>
+    <form method="POST" action="{{ url_for('main.create_user') }}">
+        <div class="mb-3">
+            <input type="text" class="form-control" name="username" placeholder="Username" required>
+        </div>
+        <div class="mb-3">
+            <input type="password" class="form-control" name="password" placeholder="Password" required>
+        </div>
+        <div class="mb-3">
+            <select class="form-select" name="role">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Create User</button>
+    </form>
+
+    <div class="mt-4">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+    </div>
+{% endblock %}

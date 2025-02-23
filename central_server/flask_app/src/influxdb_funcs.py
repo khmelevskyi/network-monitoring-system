@@ -9,10 +9,8 @@ from src.models import db, Router, Device
 
 def update_devices():
     # InfluxDB connection
-    print(INFLUXDB_TOKEN)
-    print(INFLUXDB_ORG)
     client = InfluxDBClient(
-        url="http://localhost:8086",
+        url=f"http://{INFLUXDB_HOST}:{INFLUXDB_PORT}",
         token=INFLUXDB_TOKEN,
         org=INFLUXDB_ORG
     )
@@ -30,7 +28,6 @@ def update_devices():
 
     # Execute query
     result = query_api.query(flux_query)
-    print(result)
 
     # Process results
     for table in result:

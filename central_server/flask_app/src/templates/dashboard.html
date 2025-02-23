@@ -1,14 +1,79 @@
-<h2>Routers and Devices</h2>
-{% for router in routers %}
-    <h3>Router: {{ router.local_ip_address }}, {{ router.mac_address }}</h3>
-    <ul>
-        {% for device in router.devices %}
-            <li>
-                {{ device.name }} (MAC: {{ device.mac_address }}, Local IP: {{ device.local_ip_address }})
-                <a href="{{ url_for('main.block_device', rpi_mac=router.mac_address, mac=device.mac_address) }}">Block</a>
-                <a href="{{ url_for('main.unblock_device', rpi_mac=router.mac_address, mac=device.mac_address) }}">Unblock</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endfor %}
-<a href="{{ url_for('auth.logout') }}">Logout</a>
+<!-- templates/admin.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">Routers and Devices</h2>
+        <div>
+            <a href="{{ url_for('main.route_update_devices') }}" class="btn btn-info">Update Devices List</a>
+            {% if current_user.role == 'admin' %}  
+                <a href="{{ url_for('main.add_router') }}" class="btn btn-primary">Add Router</a>
+            {% endif %}
+            {% if current_user.role == 'admin' %}  
+                <a href="{{ url_for('main.admin_panel') }}" class="btn btn-primary">Admin Panel</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+
+
+    {% for router in routers %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Router: Local IP: {{ router.local_ip_address }} | Public IP: {{ router.public_ip_address}} | MAC: {{ router.mac_address }} | Username: {{ router.username }}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>MAC Address</th>
+                            <th>Local IP</th>
+                            <th>Status</th>
+                            <th>Last Seen Active</th> <!-- New column for device last seen -->
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in router.devices %}
+                            <tr>
+                                <td>{{ device.mac_address }}</td>
+                                <td>{{ device.local_ip_address }}</td>
+                                <td>
+                                    {% if device.if_blocked %}
+                                        <span class="badge bg-danger">Blocked</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Unblocked</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if device.last_updated_data %}
+                                        {{ device.last_updated_data | time_ago }} minutes ago
+                                    {% else %}
+                                        <span class="badge bg-secondary">Never</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('main.block_device', rpi_mac=router.mac_address, mac=device.mac_address) }}" class="btn btn-warning btn-sm">Block</a>
+                                    <a href="{{ url_for('main.unblock_device', rpi_mac=router.mac_address, mac=device.mac_address) }}" class="btn btn-success btn-sm">Unblock</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Router Last Seen Section -->
+            <div class="card-footer">
+                <strong>Router Last Seen Active:</strong>
+                {% if router.last_updated_data %}
+                    {{ router.last_updated_data | time_ago }} minutes ago
+                {% else %}
+                    <span class="badge bg-secondary">Never</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+

@@ -2,6 +2,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from src.filters import time_ago_filter
 
 from src.models import db
 from src.config import (
@@ -16,6 +17,9 @@ login_manager = LoginManager()
 def create_app():
     """Application Factory - Creates Flask app instance."""
     app = Flask(__name__)
+
+    # Register custom filters
+    app.add_template_filter(time_ago_filter, name='time_ago')  # Register the filter
 
     # Configure the app
     app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
