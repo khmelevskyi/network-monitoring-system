@@ -12,12 +12,10 @@ services:
     container_name: rpi_telegraf
     user: "995:990"
     restart: unless-stopped
-    environment:
-      - DOCKER_INFLUXDB_INIT_ORG=network-monitoring
-      - DOCKER_INFLUXDB_INIT_BUCKET=network-data
-      - INFLUX_TOKEN=/run/secrets/influx_token
+    env_file:
+      - .env
     secrets:
-      - influx_token
+      - influxdb-token
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
       - ./telegraf/process_monitor.sh:/usr/local/bin/process_monitor.sh
@@ -57,5 +55,5 @@ services:
       - NET_RAW
 
 secrets:
-  influx_token:
-    file: ./secrets/influx_token.txt
+  influxdb-token:
+    file: ${INFLUXDB_TOKEN_FILE}

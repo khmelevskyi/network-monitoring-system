@@ -172,4 +172,4 @@ cython_debug/
 
 
 # Custom
-network_probe/secrets/influx_token.txt
+network_probe/secrets/influxdb*
