@@ -1,22 +1,24 @@
 import paramiko
 
-from src.config import SSH_HOST, SSH_USER, SSH_KEY_PATH
+def execute_ssh_command(command, instruction_msg, ip, username, ssh_key_path):
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        print(ip, username, ssh_key_path)
+        ssh.connect(ip, username=username, key_filename=ssh_key_path)
+        stdin, stdout, stderr = ssh.exec_command(command)
+        output = stdout.read().decode()
+        print(output)
+        ssh.close()
+        return f"{instruction_msg} {mac} on {rpi_mac}"
+    except Exception as e:
+        return f"SSH Error: {str(e)}", 500
 
-def execute_ssh_command(command):
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(SSH_HOST, username=SSH_USER, key_filename=SSH_KEY_PATH)
 
-    stdin, stdout, stderr = ssh.exec_command(command)
-    output = stdout.read().decode()
-    ssh.close()
-
-    return output
-
-def block_device(mac):
-    command = f"sudo iptables -A INPUT -m mac --mac-source {mac} -j DROP"
-    return execute_ssh_command(command)
-
-def unblock_device(mac):
-    command = f"sudo iptables -D INPUT -m mac --mac-source {mac} -j DROP"
-    return execute_ssh_command(command)
+ip = "192.168.0.107"
+command = "arp -e"
+instruction_msg = "PP"
+username = "eugene"
+ssh_key_path = "/home/eugene/repos/network-monitoring-system/central_server/secrets/rpi_01_id_rsa"
+result = execute_ssh_command(command, instruction_msg, ip, username, ssh_key_path)
+print(result)

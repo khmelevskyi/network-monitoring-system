@@ -26,7 +26,7 @@ def create_app():
     migrate = Migrate(app, db)
     login_manager.init_app(app)
 
-    login_manager.login_view = "login"
+    login_manager.login_view = "auth.login"
 
     from src.models import User, Router, Device
     from src.routes import auth_bp, main_bp

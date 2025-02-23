@@ -54,6 +54,7 @@ services:
     volumes:
       - ./flask_app/src:/flask_app/src
       - ./flask_app/migrations:/flask_app/migrations
+      - ./secrets:/run/secrets:ro
     ports:
       - "5000:5000"
     depends_on:

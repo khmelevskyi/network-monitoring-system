@@ -25,7 +25,9 @@ POSTGRES_DB = os.getenv("POSTGRES_DB", "network_monitor_central")
 POSTGRES_USER = read_secret("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = read_secret("POSTGRES_PASSWORD", "")
 
+INFLUXDB_HOST = os.getenv("INFLUXDB_HOST", "localhost")
+INFLUXDB_PORT = os.getenv("INFLUXDB_PORT", 8086)
+INFLUXDB_ORG = os.getenv("INFLUXDB_ORG", "network_monitoring")
+INFLUXDB_TOKEN = read_secret("INFLUXDB_TOKEN", "")
+
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")  # For session security
-SSH_HOST = os.getenv("SSH_HOST", "raspberrypi.local")
-SSH_USER = os.getenv("SSH_USER", "pi")
-SSH_KEY_PATH = os.getenv("SSH_KEY_PATH", "~/.ssh/id_rsa")

@@ -43,7 +43,8 @@ postgres-user.txt
 If running locally, and not on Docker, then also do the following:
 ```cd repos/network-monitoring-system/central_server/flask_app```
 ```cp src/.env.example src/.env```
-and modify the src/.env file by specifying the port, host and database name
+and modify the src/.env file by specifying the port, host and database name and do:
+```source ./src/.env```
 
 Initial setup of migrations
 ```cd repos/network-monitoring-system/central_server/flask_app```
