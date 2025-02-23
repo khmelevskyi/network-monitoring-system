@@ -79,7 +79,7 @@ outputs:
   # a line based alerts log similar to Snort's fast.log
   - fast:
       enabled: yes
-      filename: fast.log
+      filename: /var/log/suricata/fast.log
       append: yes
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
 
@@ -87,7 +87,7 @@ outputs:
   - eve-log:
       enabled: yes
       filetype: regular #regular|syslog|unix_dgram|unix_stream|redis
-      filename: eve.json
+      filename: /var/log/suricata/eve.json
       # Enable for multi-threaded eve.json output; output files are amended with
       # with an identifier, e.g., eve.9.json
       #threaded: false
@@ -97,7 +97,7 @@ outputs:
       #facility: local5
       #level: Info ## possible levels: Emergency, Alert, Critical,
                    ## Error, Warning, Notice, Info, Debug
-      #ethernet: no  # log ethernet header in events when available
+      ethernet: yes  # log ethernet header in events when available
       #redis:
       #  server: 127.0.0.1
       #  port: 6379
@@ -194,9 +194,9 @@ outputs:
             # Choose one or more types of anomaly logging and whether to enable
             # logging of the packet header for packet anomalies.
             types:
-              # decode: no
-              # stream: no
-              # applayer: yes
+              decode: yes
+              stream: yes
+              applayer: yes
             #packethdr: no
         - http:
             extended: yes     # enable this for extended logging information
@@ -267,7 +267,7 @@ outputs:
         - ftp
         - rdp
         - nfs
-        - smb
+        #- smb
         - tftp
         - ikev2
         - dcerpc
@@ -816,7 +816,7 @@ app-layer:
     imap:
       enabled: detection-only
     smb:
-      enabled: yes
+      enabled: no
       detection-ports:
         dp: 139, 445
 
