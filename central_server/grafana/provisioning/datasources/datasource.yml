@@ -1,0 +1,30 @@
+apiVersion: 1
+
+datasources:
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    jsonData:
+      version: Flux
+      organization: network-monitoring
+      defaultBucket: network-data
+      tlsSkipVerify: true
+    secureJsonData:
+      token: $__file{/run/secrets/influxdb-admin-token}
+
+  - name: Postgres
+    type: postgres
+    url: postgres:5432
+    user: postgres
+    secureJsonData:
+      password: $__file{/run/secrets/postgres-password}
+    jsonData:
+      database: network_monitor_central
+      sslmode: 'disable' # disable/require/verify-ca/verify-full
+      maxOpenConns: 100
+      maxIdleConns: 100
+      maxIdleConnsAuto: true
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false

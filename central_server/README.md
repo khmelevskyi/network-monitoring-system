@@ -4,48 +4,47 @@ The network monitoring system
 ## Prerequisitues
 Install Docker Engine and Docker Compose Plugin
 for Raspberry Pi 4 on Raspbian OS Bookworm 64:
-```for pkg in docker.io docker-doc docker-compose podman-docker containerd runc; do sudo apt-get remove $pkg; done```
-```sudo apt-get update```
-```sudo apt-get install ca-certificates curl```
-```sudo install -m 0755 -d /etc/apt/keyrings```
-```sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc```
-```sudo chmod a+r /etc/apt/keyrings/docker.asc```
-```echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian \
-  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null```
-```sudo apt-get update```
-```sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin```
+https://docs.docker.com/engine/install/debian/
 
-for Ubuntu 22.04:
-```for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done```
-```sudo apt-get update```
-```sudo apt-get install ca-certificates curl```
-```sudo install -m 0755 -d /etc/apt/keyrings```
-```sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc```
-```sudo chmod a+r /etc/apt/keyrings/docker.asc```
-```echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null```
-```sudo apt-get update```
-```sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin```
+for Ubuntu 24.04.1:
+https://docs.docker.com/engine/install/ubuntu/
+
+Execute:
+```. ./central_server/setup_static_ip.sh```
+This will set up a computer to have the static IP.
 
 Check the installation:
 ```sudo docker run hello-world```
 ```sudo docker compose version```
 
 ## Initial Set Up
-Initially, add credentials to your postgresql database inside /repos/network-monitoring-system/central_server/secrets/ folder:
-postgres-password.txt
-postgres-user.txt
+Initially, go to the folder /repos/network-monitoring-system/central_server/secrets/
+Inside this folder create two files:
+```postgres-password.txt``` - with the password to your PostgresDB
+```influxdb-admin-token.txt``` - with the admin token to your InfluxDB
 
-If running locally, and not on Docker, then also do the following:
-```cd repos/network-monitoring-system/central_server/flask_app```
-```cp src/.env.example src/.env```
-and modify the src/.env file by specifying the port, host and database name and do:
-```source ./src/.env```
+Then do:
+```cp central_server/.env.example central_server/.env```
+Edit the central_server/.env file inputing your configurations
 
+After that, launch everything with:
+```sudo docker compose up --build -d```
+
+and enter 127.0.0.1:5000/admin webpage in order to set up your first and main admin
+
+*NOTE* if running locally, also do:
+```flask --app src.app:create_app db upgrade```
+This will create the necessary tables on your Postgres DB
+
+
+## Adding Routers (Network Probes) To The Central Server
+First, make sure SSH communication is enabled on network probe's side.
+```ssh-keygen -t rsa -b 2048``` - generate the ssh key for a computer
+```ssh-copy-id -i .ssh/id_rsa.pub <target_user>@<target_ip>``` - copy the public ssh key to the network probe
+```ssh -i .ssh/id_rsa <target_user>@<target_ip>``` - verify if everything worked. You should be logged into the network probe's terminal
+
+
+## Flask Models to Postgres DB Migrations
 Initial setup of migrations
 ```cd repos/network-monitoring-system/central_server/flask_app```
 ```flask --app src.app:create_app db init```

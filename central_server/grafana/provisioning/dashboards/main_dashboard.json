@@ -1,0 +1,91 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "links": [],
+  "panels": [
+    {
+      "type": "table",
+      "title": "Raspberry Pi 4 Devices and Connected Clients",
+      "columns": [
+        {"text": "Raspberry Pi MAC", "value": "rpi_mac"},
+        {"text": "Connected Device MAC", "value": "device_mac"},
+        {"text": "Last Seen", "value": "last_seen"},
+        {"text": "Action", "value": "block_device"}
+      ],
+      "datasource": "InfluxDB",
+      "targets": [
+        {
+          "query": "from(bucket: \"network-data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"arp_entry\" |> group(columns: [\"rpi_mac\", \"_value\", \"ip\"]) |> last())",
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "addField",
+          "options": {
+            "field": "block_device",
+            "type": "button",
+            "label": "Block",
+            "url": "/block/${rpi_mac}/${device_mac}",
+            "target": "_blank"
+          }
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total Incoming Traffic",
+      "datasource": "InfluxDB",
+      "targets": [
+        {
+          "query": "from(bucket: \"network-data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"traffic\") |> filter(fn: (r) => r._field == \"bytes_in\") |> sum()"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total Outgoing Traffic",
+      "datasource": "InfluxDB",
+      "targets": [
+        {
+          "query": "from(bucket: \"network-data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"traffic\") |> filter(fn: (r) => r._field == \"bytes_out\") |> sum()"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Number of Suricata Alerts",
+      "datasource": "InfluxDB",
+      "targets": [
+        {
+          "query": "from(bucket: \"network-data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"tail\") |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Top Connected IPs",
+      "datasource": "InfluxDB",
+      "targets": [
+        {
+          "query": "from(bucket: \"network-data\") |> range(start: -1h) |> filter(fn: (r) => r._measurement == \"netflows\") |> group(columns: [\"ip\"]) |> count()"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["network", "monitoring"],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timezone": "browser",
+  "title": "Network Monitoring",
+  "version": 1
+}

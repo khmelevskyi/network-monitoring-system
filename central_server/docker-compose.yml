@@ -58,11 +58,33 @@ services:
       - ssh-private-key
       - influxdb-admin-token
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: central_grafana
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    env_file:
+      .env
+    environment:
+      INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      # - ./grafana/conf/defaults.ini:/usr/share/grafana/conf/defaults.ini
+    depends_on:
+      - influxdb
+    secrets:
+      - postgres-password
+      - influxdb-admin-token
+
 
 volumes:
   influxdb-data:
   influxdb-config:
   postgres-data:
+  grafana-data:
 
 secrets:
   influxdb-admin-token:
