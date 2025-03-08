@@ -6,10 +6,7 @@ from src.decorators import admin_required
 from src.models import db, User, Router, Device
 from src.ssh_client import execute_ssh_command
 from src.app import login_manager
-from src.influxdb_funcs import (
-    batch_query_flux_last_seen, batch_query_flux_flows,
-    batch_query_flux_traffic, update_devices, update_routers
-)
+from src.influxdb_funcs import update_devices, update_routers
 
 from src.config import SSH_PRIVATE_KEY_PATH
 
@@ -170,7 +167,7 @@ def block_device(rpi_mac, mac):
         return redirect(url_for("main.dashboard"))
 
     ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
-    username = router.username
+    username = router.ssh_username
     ssh_key_path = SSH_PRIVATE_KEY_PATH
     print(ssh_key_path)
 
@@ -205,7 +202,7 @@ def unblock_device(rpi_mac, mac):
         return redirect(url_for("main.dashboard"))
 
     ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
-    username = router.username
+    username = router.ssh_username
     ssh_key_path = SSH_PRIVATE_KEY_PATH
 
     # ssh_command = f"sudo iptables -D INPUT -m mac --mac-source {mac} -j DROP && sudo iptables -D FORWARD -m mac --mac-source {mac} -j DROP"
@@ -220,56 +217,3 @@ def unblock_device(rpi_mac, mac):
     flash(result, "info")
     return redirect(url_for("main.dashboard"))
 
-
-
-### INFLUXDB RELATED
-@main_bp.route("/router/<router_mac>")
-@login_required
-def router_details(router_mac):
-    router = Router.query.filter_by(mac_address=router_mac).first()
-    if not router:
-        flash("Router not found", "danger")
-        return redirect(url_for("main.dashboard"))
-
-    # Get all device IPs
-    device_ips = [device.local_ip_address for device in router.devices]
-    
-    # Query all metrics for these devices in batch
-    last_seen_map = batch_query_flux_last_seen(device_ips)
-    flows_map = batch_query_flux_flows(device_ips)
-    traffic_map = batch_query_flux_traffic(device_ips)
-
-    devices = []
-    for device in router.devices:
-        ip = device.local_ip_address
-        devices.append({
-            "mac_address": device.mac_address,
-            "local_ip_address": ip,
-            "last_seen_active": last_seen_map.get(ip, "N/A"),
-            "flows_last_hour": flows_map.get(ip, {}).get("1h", 0),
-            "avg_flows_per_hour": flows_map.get(ip, {}).get("30d", 0),
-            "incoming_traffic_last_hour": traffic_map.get(ip, {}).get("incoming_1h", "0 B"),
-            "avg_incoming_traffic": traffic_map.get(ip, {}).get("incoming_30d", "0 B"),
-            "outgoing_traffic_last_hour": traffic_map.get(ip, {}).get("outgoing_1h", "0 B"),
-            "avg_outgoing_traffic": traffic_map.get(ip, {}).get("outgoing_30d", "0 B"),
-        })
-
-    return render_template("dashboard_router_detailed.html", router=router, devices=devices)
-
-
-@main_bp.route("/router/<router_mac>/traffic")
-@login_required
-def get_router_traffic(router_mac):
-    router = Router.query.filter_by(mac_address=router_mac).first()
-    if not router:
-        flash("Router not found", "danger")
-        return redirect(url_for("main.dashboard"))
-
-    incoming_traffic = query_flux_traffic("192.168.0.107", "incoming", "10m", with_timestamps=True)
-    outgoing_traffic = query_flux_traffic("192.168.0.107", "outgoing", "10m", with_timestamps=True)
-
-    print("###############################################################")
-    print(router.local_ip_address)
-    # print(incoming_traffic)
-
-    return jsonify({"incoming": incoming_traffic, "outgoing": outgoing_traffic})
