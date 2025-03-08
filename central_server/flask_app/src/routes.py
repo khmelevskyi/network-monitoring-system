@@ -123,31 +123,6 @@ def route_update_devices():
 
 
 
-# Route to Add Router
-@main_bp.route("/add_router", methods=["GET", "POST"])
-@admin_required
-def add_router():
-    if request.method == "POST":
-        rpi_mac = request.form["rpi_mac"]
-        public_ip = request.form["public_ip"]
-        local_ip = request.form["local_ip"]
-        username = request.form["username"]
-
-        # Store in DB
-        new_router = Router(
-            mac_address=rpi_mac,
-            public_ip_address=public_ip,
-            local_ip_address=local_ip,
-            username=username
-        )
-        db.session.add(new_router)
-        db.session.commit()
-        flash("Router added successfully!", "success")
-        return redirect(url_for("main.dashboard"))
-
-    return render_template("add_router.html")
-
-
 # Block/Unblock Device (Admin Only)
 @main_bp.route('/block/<rpi_mac>/<mac>')
 @admin_required

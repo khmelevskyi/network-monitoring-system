@@ -10,9 +10,6 @@
         <div>
             <a href="{{ url_for('main.route_update_devices') }}" class="btn btn-info">Update Devices List</a>
             <a href="{{ url_for('main.route_update_routers') }}" class="btn btn-info">Update Routers List</a>
-            <!-- {% if current_user.role == 'admin' %}  
-                <a href="{{ url_for('main.add_router') }}" class="btn btn-primary">Add Router</a>
-            {% endif %} -->
             {% if current_user.role == 'admin' %}  
                 <a href="{{ url_for('main.admin_panel') }}" class="btn btn-secondary">Admin Panel</a>
             {% endif %}
