@@ -8,8 +8,8 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-primary">Routers and Devices</h2>
         <div>
-            <a href="{{ url_for('main.route_update_devices') }}" class="btn btn-info">Update Devices List</a>
-            <a href="{{ url_for('main.route_update_routers') }}" class="btn btn-info">Update Routers List</a>
+            <a href="{{ url_for('main.update_devices') }}" class="btn btn-info">Update Devices List</a>
+            <a href="{{ url_for('main.update_routers') }}" class="btn btn-info">Update Routers List</a>
             {% if current_user.role == 'admin' %}  
                 <a href="{{ url_for('main.admin_panel') }}" class="btn btn-secondary">Admin Panel</a>
             {% endif %}
@@ -38,7 +38,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for device in router.devices %}
+                        {% for device in router.devices | sort(attribute='last_seen_online', reverse=True) %}
                             <tr>
                                 <td>{{ device.mac_address }}</td>
                                 <td>{{ device.local_ip_address }}</td>

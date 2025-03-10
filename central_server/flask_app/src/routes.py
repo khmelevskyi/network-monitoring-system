@@ -6,9 +6,13 @@ from src.decorators import admin_required
 from src.models import db, User, Router, Device
 from src.ssh_client import execute_ssh_command
 from src.app import login_manager
-from src.influxdb_funcs import update_devices, update_routers
+from src.influxdb_funcs import flux_update_devices, flux_update_routers
+from src.geoip_traceroute import enrich_flows
 
 from src.config import SSH_PRIVATE_KEY_PATH
+
+import json
+from datetime import datetime
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -54,7 +58,7 @@ def first_page():
 @main_bp.route("/dashboard")
 @login_required
 def dashboard():
-    routers = Router.query.all()
+    routers = Router.query.order_by(Router.last_seen_online.desc()).all()
     return render_template("dashboard.html", routers=routers)
 
 # Create init admin
@@ -108,18 +112,94 @@ def create_user():
     return redirect(url_for("main.admin_panel"))
 
 
+# Update Routers
 @main_bp.route('/update_routers', methods=["GET"])
-@login_required
-def route_update_routers():
-    update_routers()
-    return redirect(url_for("main.dashboard"))
+# @login_required
+def update_routers():
+    result = flux_update_routers()
+
+    # Process results
+    for table in result:
+        for record in table.records:
+            rpi_mac = record.values.get("rpi_mac")
+            rpi_description = record.values.get("rpi_description")
+            rpi_public_ip = record.values.get("rpi_public_ip")
+            rpi_local_ip = record.values.get("rpi_local_ip")
+            rpi_ssh_username = record.values.get("rpi_ssh_username")
+            last_seen_online = record.values.get("_time")
+
+            # Find the router
+            router = Router.query.filter_by(mac_address=rpi_mac).first()
+            if router:
+                # Update existing router
+                router.description = rpi_description
+                router.public_ip_address = rpi_public_ip
+                router.local_ip_address = rpi_local_ip
+                router.ssh_username = rpi_ssh_username
+                router.last_seen_online = last_seen_online
+            else:
+                # Add new device
+                new_router = Router(
+                    mac_address=rpi_mac,
+                    description=rpi_description,
+                    public_ip_address=rpi_public_ip,
+                    local_ip_address=rpi_local_ip,
+                    ssh_username=rpi_ssh_username,
+                    last_seen_online=last_seen_online
+                )
+                db.session.add(new_router)
+
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+                print(f"Error updating router {rpi_mac}")
+
+    # return redirect(url_for("main.dashboard"))
+    return json.dumps({"status": "success", "last_checked_routers": str(datetime.utcnow())})
 
 
+# Update Devices
 @main_bp.route('/update_devices', methods=["GET"])
-@login_required
-def route_update_devices():
-    update_devices()
-    return redirect(url_for("main.dashboard"))
+# @login_required
+def update_devices():
+    result = flux_update_devices()
+
+    # Process results
+    for table in result:
+        for record in table.records:
+            rpi_mac = record.values.get("rpi_mac")
+            device_mac = record.values.get("mac")
+            ip_address = record.values.get("_value")
+            last_seen_online = record.values.get("_time")
+
+            # Find the router
+            router = Router.query.filter_by(mac_address=rpi_mac).first()
+            if router:
+                # Check if device exists
+                device = Device.query.filter_by(mac_address=device_mac, router_id=router.id).first()
+                if device:
+                    # Update existing device
+                    device.local_ip_address = ip_address
+                    device.last_seen_online = last_seen_online
+                else:
+                    # Add new device
+                    new_device = Device(
+                        mac_address=device_mac,
+                        local_ip_address=ip_address,
+                        router_id=router.id,
+                        last_seen_online=last_seen_online
+                    )
+                    db.session.add(new_device)
+
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    db.session.rollback()
+                    print(f"Error updating device {device_mac} for router {rpi_mac}")
+
+    # return redirect(url_for("main.dashboard"))
+    return json.dumps({"status": "success", "last_checked_devices": str(datetime.utcnow())})
 
 
 
@@ -192,3 +272,10 @@ def unblock_device(rpi_mac, mac):
     flash(result, "info")
     return redirect(url_for("main.dashboard"))
 
+
+
+# GeoIP and Traceroute
+@main_bp.route("/enrich_flows")
+def route_enrich_flows():
+    result = enrich_flows()
+    return result
