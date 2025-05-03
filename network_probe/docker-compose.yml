@@ -10,7 +10,7 @@ services:
       dockerfile: Dockerfile
     image: custom-telegraf:latest
     container_name: rpi_telegraf
-    user: "995:990"
+    user: root
     restart: unless-stopped
     env_file:
       - .env
@@ -18,7 +18,6 @@ services:
       - influxdb-token
     volumes:
       - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
-      - ./telegraf/process_monitor.sh:/usr/local/bin/process_monitor.sh
       - suricata_logs:/var/log/suricata:ro
     depends_on:
       - suricata
@@ -39,7 +38,7 @@ services:
     volumes:
       - suricata_logs:/var/log/suricata
       - /var/run/suricata:/var/run/suricata
-    command: ["-i", "eth0"]
+    command: ["-i", "wlan0"]
     restart: unless-stopped
 
   softflowd:
