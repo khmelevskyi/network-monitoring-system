@@ -59,15 +59,45 @@ def flux_update_devices():
     return result
 
 
-def flux_get_flows():
+def flux_get_unique_ip_addresses(ip_address):
+    if not ip_address:
+        flux_query = f'''
+            from(bucket: "{INFLUXDB_BUCKET}")
+                |> range(start: -15m)
+                |> filter(fn: (r) => r["_measurement"] == "netflow")
+                |> filter(fn: (r) => r["_field"] == "src" or r["_field"] == "dst")
+                |> keep(columns: ["_value"])
+                |> distinct(column: "_value")
+            '''
+
+    elif ip_address:
+        flux_query = f'''
+            from(bucket: "{INFLUXDB_BUCKET}")
+                |> range(start: -15m)
+                |> filter(fn: (r) => r["_measurement"] == "netflow")
+                |> filter(fn: (r) => r["_field"] == "src" or r["_field"] == "dst")
+                |> filter(fn: (r) => r["_value"] == "{ip_address}")
+                |> keep(columns: ["_value"])
+                |> distinct(column: "_value")
+            '''
+
+    result = execute_flux_query(flux_query)
+    return result
+
+
+def flux_get_data_for_port_scanning_detection():
     flux_query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
         |> range(start: -15m)
-        |> filter(fn: (r) => r["_measurement"] == "netflow")
-        |> filter(fn: (r) => r["_field"] == "src" or r["_field"] == "dst")
-        |> keep(columns: ["_value"])
-        |> distinct(column: "_value")
+        |> filter(fn: (r) => r._measurement == "netflow")
+        |> filter(fn: (r) => r._field == "in_packets" or r._field == "src"  or r._field == "dst_port")
+        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> filter(fn: (r) => not r.src =~ /^192\.168\.4\..*/ and not r.src =~ /::/)
+        |> group(columns: ["src", "dst_port"])
+        |> sum(column: "in_packets")
     '''
 
-    result = execute_flux_query(flux_query)
+    # result = execute_flux_query(flux_query)
+    with InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG) as client:
+        result = client.query_api().query(flux_query)
     return result

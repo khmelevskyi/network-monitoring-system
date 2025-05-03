@@ -275,7 +275,30 @@ def unblock_device(rpi_mac, mac):
 
 
 # GeoIP and Traceroute
-@main_bp.route("/enrich_flows")
-def route_enrich_flows():
-    result = enrich_flows()
+@main_bp.route("/enrich_flows/", defaults={"ip_address": None})
+@main_bp.route("/enrich_flows/<ip_address>")
+def route_enrich_flows(ip_address):
+    # result = enrich_flows(ip_address)
+    result = json.dumps({
+                "ip": '1.1.1.1',
+                "country": 'RU',
+                "city": 'Moscow',
+                "region": 'Moscow',
+                "latitude": 55.7558,
+                "longitude": 37.6173,
+                "organization": 'bad org',
+                "hostname": 'mail.ru',
+                "timezone": 'Europe/Moscow',
+                "postal": '103274',
+                # "traceroute": traceroute_result.strip().split("\n"),
+            })
     return result
+
+
+
+@main_bp.route("/entropy_anomaly_detection")
+def anomaly_detection_entropy():
+    result = fsfsf
+
+
+

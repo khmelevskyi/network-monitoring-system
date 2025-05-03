@@ -3,7 +3,7 @@ import requests
 import json
 import ipaddress
 
-from src.influxdb_funcs import flux_get_flows
+from src.influxdb_funcs import flux_get_unique_ip_addresses
 
 # Set the IPInfo API endpoint
 IPINFO_URL = "http://ipinfo.io/{}/json"
@@ -12,8 +12,8 @@ IPINFO_URL = "http://ipinfo.io/{}/json"
 def is_private_ip(ip):
     return ipaddress.ip_address(ip).is_private
 
-def enrich_flows():
-    result = flux_get_flows()
+def enrich_flows(ip_address):
+    result = flux_get_unique_ip_addresses(ip_address)
     total_json_data = []
     
     for table in result:
@@ -32,6 +32,8 @@ def enrich_flows():
                 city = data.get("city", "Unknown")
                 region = data.get("region", "Unknown")
                 loc = data.get("loc", "Unknown")  # Latitude, Longitude
+                # print(loc) # 50.1155,8.6842
+                # print(type(loc)) # <class 'str'>
                 org = data.get("org", "Unknown")
                 hostname = data.get("hostname", "Unknown")
                 timezone = data.get("timezone", "Unknown")
