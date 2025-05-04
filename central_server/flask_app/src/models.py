@@ -36,3 +36,20 @@ class Device(db.Model):
     router_id = db.Column(db.Integer, db.ForeignKey('routers.id'), nullable=False)
 
     router = db.relationship('Router', backref='devices')
+
+
+class public_IP_detail(db.Model):
+    __tablename__ = 'public_ip_details'
+
+    ip = db.Column(db.String(64), nullable=False, primary_key=True)
+    country = db.Column(db.String(64), nullable=True)
+    city = db.Column(db.String(64), nullable=True)
+    region = db.Column(db.String(64), nullable=True)
+    latitude = db.Column(db.Float, nullable=True)
+    longitude = db.Column(db.Float, nullable=True)
+    organization = db.Column(db.String(256), nullable=True)
+    hostname = db.Column(db.String(256), nullable=True)
+    timezone = db.Column(db.String(64), nullable=True)
+    postal = db.Column(db.String(64), nullable=True)
+
+

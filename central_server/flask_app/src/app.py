@@ -11,21 +11,21 @@ from src.config import (
 			SECRET_KEY)
 
 
-# Initialize extensions (but don't tie them to an app yet)
+# Initializing extensions (not tied to an app yet)
 login_manager = LoginManager()
 
 def create_app():
-    """Application Factory - Creates Flask app instance."""
+    """Application Factory - Creating Flask app instance."""
     app = Flask(__name__)
 
-    # Register custom filters
-    app.add_template_filter(time_ago_filter, name='time_ago')  # Register the filter
+    # Registering custom filters
+    app.add_template_filter(time_ago_filter, name='time_ago')  # registering the filter
 
-    # Configure the app
+    # Configuring the app
     app.config["SQLALCHEMY_DATABASE_URI"] = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
     app.config["SECRET_KEY"] = SECRET_KEY
 
-    # Initialize extensions
+    # Initializing extensions
     db.init_app(app)
     migrate = Migrate(app, db)
     login_manager.init_app(app)
@@ -35,8 +35,12 @@ def create_app():
     from src.models import User, Router, Device
     from src.routes import auth_bp, main_bp
 
-    # Register Blueprints (Modular Routes)
+    # Registering Blueprints (Modular Routes)
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
+
+    # Registering Scheduler
+    from src.scheduler import start_scheduler
+    start_scheduler(app)
 
     return app

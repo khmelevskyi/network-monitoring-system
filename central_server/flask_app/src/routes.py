@@ -1,18 +1,18 @@
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import login_user, logout_user, login_required
-from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
-
-from src.decorators import admin_required
-from src.models import db, User, Router, Device
-from src.ssh_client import execute_ssh_command
-from src.app import login_manager
-from src.influxdb_funcs import flux_update_devices, flux_update_routers
-from src.geoip_traceroute import enrich_flows
-
-from src.config import SSH_PRIVATE_KEY_PATH
-
 import json
 from datetime import datetime
+
+from flask_login import login_user, logout_user, login_required
+from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from src.app import login_manager
+from src.decorators import admin_required
+# from src.geoip_traceroute import enrich_ips
+from src.models import db, User, Router, Device
+from src.api_endpoints import get_ip_details_for_grafana
+from src.ssh_client import ssh_block_device, ssh_unblock_device
+from src.influxdb_funcs import flux_update_devices, flux_update_routers
+from src.anomaly_detectors import check_entropy_anomaly, check_botnet_activity
 
 
 auth_bp = Blueprint("auth", __name__)
@@ -138,7 +138,7 @@ def update_routers():
                 router.ssh_username = rpi_ssh_username
                 router.last_seen_online = last_seen_online
             else:
-                # Add new device
+                # Add new Router
                 new_router = Router(
                     mac_address=rpi_mac,
                     description=rpi_description,
@@ -206,34 +206,8 @@ def update_devices():
 # Block/Unblock Device (Admin Only)
 @main_bp.route('/block/<rpi_mac>/<mac>')
 @admin_required
-def block_device(rpi_mac, mac):
-    router = Router.query.filter_by(mac_address=rpi_mac).first()
-    if not router:
-        flash("Router not found", "danger")
-        return redirect(url_for("main.dashboard"))
-
-    device = Device.query.filter_by(mac_address=mac).first()
-    if not device:
-        flash("Device not found", "danger")
-        return redirect(url_for("main.dashboard"))
-
-    if device.if_blocked == True:
-        flash("Device is already blocked", "warning")
-        return redirect(url_for("main.dashboard"))
-
-    ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
-    username = router.ssh_username
-    ssh_key_path = SSH_PRIVATE_KEY_PATH
-    print(ssh_key_path)
-
-    # ssh_command = f"sudo iptables -A INPUT -m mac --mac-source {mac} -j DROP && sudo iptables -A FORWARD -m mac --mac-source {mac} -j DROP"
-    ssh_command = "arp -e"
-
-    result = execute_ssh_command(ssh_command, "Blocked", rpi_mac, mac, ip, username, ssh_key_path)
-    print(result)
-
-    device.if_blocked = True
-    db.session.commit()
+def route_block_device(rpi_mac, mac):
+    ssh_block_device(rpi_mac, mac)
 
     flash(result, "info")
     return redirect(url_for("main.dashboard"))
@@ -242,63 +216,50 @@ def block_device(rpi_mac, mac):
 @main_bp.route("/unblock/<rpi_mac>/<mac>")
 @admin_required
 def unblock_device(rpi_mac, mac):
-    router = Router.query.filter_by(mac_address=rpi_mac).first()
-    if not router:
-        flash("Router not found", "danger")
-        return redirect(url_for("main.dashboard"))
-
-    device = Device.query.filter_by(mac_address=mac).first()
-    if not device:
-        flash("Device not found", "danger")
-        return redirect(url_for("main.dashboard"))
-
-    if device.if_blocked == False:
-        flash("Device is already unblocked", "warning")
-        return redirect(url_for("main.dashboard"))
-
-    ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
-    username = router.ssh_username
-    ssh_key_path = SSH_PRIVATE_KEY_PATH
-
-    # ssh_command = f"sudo iptables -D INPUT -m mac --mac-source {mac} -j DROP && sudo iptables -D FORWARD -m mac --mac-source {mac} -j DROP"
-    ssh_command = "arp -e"
-
-    result = execute_ssh_command(ssh_command, "Unblocked", rpi_mac, mac, ip, username, ssh_key_path)
-    print(result)
-
-    device.if_blocked = False
-    db.session.commit()
+    ssh_unblock_device(rpi_mac, mac)
 
     flash(result, "info")
     return redirect(url_for("main.dashboard"))
 
 
-
 # GeoIP and Traceroute
-@main_bp.route("/enrich_flows/", defaults={"ip_address": None})
-@main_bp.route("/enrich_flows/<ip_address>")
-def route_enrich_flows(ip_address):
-    # result = enrich_flows(ip_address)
-    result = json.dumps({
-                "ip": '1.1.1.1',
-                "country": 'RU',
-                "city": 'Moscow',
-                "region": 'Moscow',
-                "latitude": 55.7558,
-                "longitude": 37.6173,
-                "organization": 'bad org',
-                "hostname": 'mail.ru',
-                "timezone": 'Europe/Moscow',
-                "postal": '103274',
-                # "traceroute": traceroute_result.strip().split("\n"),
-            })
+# @main_bp.route("/get_ip_details")
+# def route_get_ip_details():
+#     result = json.dumps({
+#                 "ip": '1.1.1.1',
+#                 "country": 'RU',
+#                 "city": 'Moscow',
+#                 "region": 'Moscow',
+#                 "latitude": 55.7558,
+#                 "longitude": 37.6173,
+#                 "organization": 'bad org',
+#                 "hostname": 'mail.ru',
+#                 "timezone": 'Europe/Moscow',
+#                 "postal": '103274'
+#             })
+#     return result
+
+
+@main_bp.route("/get_ip_details")
+def route_get_ip_details():
+    ip_to_lookup = request.args.get("public_ip")
+    device_ip = request.args.get("device_ip")
+    start_time = request.args.get("start")
+    end_time = request.args.get("end")
+
+    result = get_ip_details_for_grafana(ip_to_lookup, device_ip, start_time, end_time)
+
     return result
 
 
 
-@main_bp.route("/entropy_anomaly_detection")
-def anomaly_detection_entropy():
-    result = fsfsf
 
+
+## testing routes
+@main_bp.route("/check_botnet_activity")
+def route_check_botnet_activity():
+    result = check_botnet_activity()
+
+    return result
 
 

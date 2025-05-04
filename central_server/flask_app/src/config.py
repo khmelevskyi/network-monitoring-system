@@ -31,10 +31,14 @@ INFLUXDB_ORG = os.getenv("DOCKER_INFLUXDB_INIT_ORG", "network_monitoring")
 INFLUXDB_BUCKET = os.getenv("DOCKER_INFLUXDB_INIT_BUCKET", "network-data")
 INFLUXDB_TOKEN = read_secret("DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE", "")
 
+IPINFO_TOKEN = os.getenv("IPINFO_TOKEN", "")
+
 FLASK_RUN_MODE_IF_DOCKER = os.getenv("FLASK_RUN_MODE_IF_DOCKER", "true")
 if FLASK_RUN_MODE_IF_DOCKER == "true":
     SSH_PRIVATE_KEY_PATH = os.getenv("SSH_PRIVATE_KEY_DOCKER_PATH")
 elif FLASK_RUN_MODE_IF_DOCKER == "false":
     SSH_PRIVATE_KEY_PATH = os.getenv("SSH_PRIVATE_KEY_LOCAL_PATH")
+    POSTGRES_PASSWORD = "." + read_secret("POSTGRES_PASSWORD_LOCAL_FILE", "")
+    INFLUXDB_TOKEN = "." + read_secret("INFLUXDB_TOKEN_LOCAL_FILE", "")
 
 SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")  # For session security

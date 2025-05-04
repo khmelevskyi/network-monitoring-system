@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from influxdb_client import InfluxDBClient
 from influxdb_client.client.write_api import SYNCHRONOUS
-from datetime import datetime
 from sqlalchemy.exc import IntegrityError
 
-from src.config import INFLUXDB_HOST, INFLUXDB_PORT, INFLUXDB_ORG, INFLUXDB_TOKEN, INFLUXDB_BUCKET
+from src.config import (INFLUXDB_HOST, INFLUXDB_PORT,
+    INFLUXDB_ORG, INFLUXDB_TOKEN, INFLUXDB_BUCKET)
 
 
 INFLUXDB_URL = f"http://{INFLUXDB_HOST}:{INFLUXDB_PORT}"
@@ -28,7 +30,6 @@ def execute_flux_query(query):
 
 
 def flux_update_routers():
-    # Flux query
     flux_query = f'''
     from(bucket: "{INFLUXDB_BUCKET}")
         |> range(start: -15m)
@@ -37,9 +38,7 @@ def flux_update_routers():
         |> last(column: "_time")
     '''
 
-    # Execute query
     result = execute_flux_query(flux_query)
-
     return result
 
 
@@ -53,9 +52,7 @@ def flux_update_devices():
         |> last(column: "_time")
     '''
 
-    # Execute query
     result = execute_flux_query(flux_query)
-
     return result
 
 
@@ -63,7 +60,7 @@ def flux_get_unique_ip_addresses(ip_address):
     if not ip_address:
         flux_query = f'''
             from(bucket: "{INFLUXDB_BUCKET}")
-                |> range(start: -15m)
+                |> range(start: -5m)
                 |> filter(fn: (r) => r["_measurement"] == "netflow")
                 |> filter(fn: (r) => r["_field"] == "src" or r["_field"] == "dst")
                 |> keep(columns: ["_value"])
@@ -73,7 +70,7 @@ def flux_get_unique_ip_addresses(ip_address):
     elif ip_address:
         flux_query = f'''
             from(bucket: "{INFLUXDB_BUCKET}")
-                |> range(start: -15m)
+                |> range(start: -5m)
                 |> filter(fn: (r) => r["_measurement"] == "netflow")
                 |> filter(fn: (r) => r["_field"] == "src" or r["_field"] == "dst")
                 |> filter(fn: (r) => r["_value"] == "{ip_address}")
@@ -85,19 +82,54 @@ def flux_get_unique_ip_addresses(ip_address):
     return result
 
 
-def flux_get_data_for_port_scanning_detection():
+def flux_get_data_for_ip_entropy_check():
     flux_query = f'''
-    from(bucket: "{INFLUXDB_BUCKET}")
-        |> range(start: -15m)
-        |> filter(fn: (r) => r._measurement == "netflow")
-        |> filter(fn: (r) => r._field == "in_packets" or r._field == "src"  or r._field == "dst_port")
-        |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-        |> filter(fn: (r) => not r.src =~ /^192\.168\.4\..*/ and not r.src =~ /::/)
-        |> group(columns: ["src", "dst_port"])
-        |> sum(column: "in_packets")
+        from(bucket: "network-data")
+          |> range(start: -15m)
+          |> filter(fn: (r) => r._measurement == "netflow")
+          |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+          |> filter(fn: (r) => contains(value: r.src, set: ["192.168.4.1", "192.168.4.84", "192.168.4.27"])) // Filter by your list of src IPs
+          |> group(columns: ["src", "dst"])
+          |> sum(column: "in_bytes")  // total per (src, dst)
+          |> group(columns: ["src"])  // regroup by src for entropy
     '''
 
-    # result = execute_flux_query(flux_query)
-    with InfluxDBClient(url=INFLUXDB_URL, token=INFLUXDB_TOKEN, org=INFLUXDB_ORG) as client:
-        result = client.query_api().query(flux_query)
+    result = execute_flux_query(flux_query)
+    return result
+
+
+def flux_get_data_for_botnet_activity_check():
+    flux_query = '''
+        import "date"
+        from(bucket: "network-data")
+            |> range(start: -30m)
+            |> filter(fn: (r) => r._measurement == "netflow")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> filter(fn: (r) => contains(value: r.src, set: ["192.168.4.1", "192.168.4.84", "192.168.4.27"])) // Filter by your list of src IPs
+            |> map(fn: (r) => ({ r with _time: date.truncate(t: r._time, unit: 1s)}))
+            |> keep(columns: ["_time", "src", "dst"])
+            |> group(columns: ["_time", "src", "dst"])
+            |> last(column: "_time")
+            |> sort(columns: ["src", "dst", "_time"])
+    '''
+
+    result = execute_flux_query(flux_query)
+    return result
+
+
+def flux_get_recent_flows(device_ip, start_time, end_time):
+    ip_list = [ip.strip() for ip in device_ip.strip('{}').split(',')]
+    flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in ip_list]) + "]"
+
+    flux_query = f'''
+        from(bucket: "{INFLUXDB_BUCKET}")
+            |> range(start: {start_time}, stop: {end_time})
+            |> filter(fn: (r) => r._measurement == "netflow")
+            |> filter(fn: (r) => r._field == "src" or r._field == "dst")
+            |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+            |> filter(fn: (r) => contains(value: r.dst, set: {flux_ip_list}) or contains(value: r.src, set: {flux_ip_list}))
+            |> keep(columns: ["dst", "src"])
+        '''
+
+    result = execute_flux_query(flux_query)
     return result
