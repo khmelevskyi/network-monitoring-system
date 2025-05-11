@@ -96,7 +96,7 @@ def api_update_devices():
 	return json.dumps({"status": "success", "last_checked_devices": str(datetime.utcnow())})
 
 
-def api_get_ip_details(ip_to_lookup, device_ip, start_time, end_time):
+def api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time):
 
 	if ip_to_lookup: # if needed IP detail only for one IP address
 		print("Specific IP address to lookup by:", ip_to_lookup)
@@ -127,7 +127,7 @@ def api_get_ip_details(ip_to_lookup, device_ip, start_time, end_time):
 	# Grafana passes either one device_ip
 	# or a list of all device_ips if the option 'ALL' is chosen
 	# So, we always have device_ip variable with some value
-	tables = flux_get_recent_flows(device_ip, start_time, end_time)
+	tables = flux_get_recent_flows(device_ips, start_time, end_time)
 
 	data = []
 	for table in tables:

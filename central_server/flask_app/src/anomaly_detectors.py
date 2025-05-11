@@ -1,13 +1,17 @@
 import numpy as np
 import pandas as pd
 
+from src.models import db, Device
 from src.influxdb_funcs import (flux_get_data_for_ip_entropy_check,
 								flux_get_data_for_botnet_activity_check)
 
 
 
 def check_entropy_anomaly():
-	tables = flux_get_data_for_ip_entropy_check()
+	device_ips = db.session.query(Device.local_ip_address).all()
+	device_ips_set = {ip[0] for ip in device_ips}
+
+	tables = flux_get_data_for_ip_entropy_check(device_ips_set)
 	data = []
 	for table in tables:
 		for record in table.records:
@@ -33,7 +37,10 @@ def check_entropy_anomaly():
 
 
 def check_botnet_activity():
-	tables = flux_get_data_for_botnet_activity_check()
+	device_ips = db.session.query(Device.local_ip_address).all()
+	device_ips_set = {ip[0] for ip in device_ips}
+
+	tables = flux_get_data_for_botnet_activity_check(device_ips_set)
 	data = []
 	for table in tables:
 		for record in table.records:

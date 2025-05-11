@@ -134,11 +134,11 @@ def route_update_devices():
 @main_bp.route("/api/get_ip_details")
 def route_get_ip_details():
 	ip_to_lookup = request.args.get("public_ip")
-	device_ip = request.args.get("device_ip")
+	device_ips = request.args.get("device_ips")
 	start_time = request.args.get("start")
 	end_time = request.args.get("end")
 
-	result = api_get_ip_details(ip_to_lookup, device_ip, start_time, end_time)
+	result = api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time)
 
 	return result
 

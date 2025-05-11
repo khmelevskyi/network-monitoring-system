@@ -68,13 +68,15 @@ def flux_get_unique_ip_addresses(ip_address):
 	return result
 
 
-def flux_get_data_for_ip_entropy_check():
+def flux_get_data_for_ip_entropy_check(device_ips_set):
+	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in device_ips_set]) + "]"
+
 	flux_query = f'''
 		from(bucket: "network-data")
 			|> range(start: -15m)
 			|> filter(fn: (r) => r._measurement == "netflow")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-			|> filter(fn: (r) => contains(value: r.src, set: ["192.168.4.1", "192.168.4.84", "192.168.4.27"])) // Filter by your list of src IPs
+			|> filter(fn: (r) => contains(value: r.src, set: {flux_ip_list})) // Filter by list of src IPs
 			|> group(columns: ["src", "dst"])
 			|> sum(column: "in_bytes")  // total per (src, dst)
 			|> group(columns: ["src"])  // regroup by src for entropy
@@ -84,15 +86,17 @@ def flux_get_data_for_ip_entropy_check():
 	return result
 
 
-def flux_get_data_for_botnet_activity_check():
-	flux_query = '''
+def flux_get_data_for_botnet_activity_check(device_ips_set):
+	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in device_ips_set]) + "]"
+
+	flux_query = f'''
 		import "date"
 		from(bucket: "network-data")
 			|> range(start: -30m)
 			|> filter(fn: (r) => r._measurement == "netflow")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-			|> filter(fn: (r) => contains(value: r.src, set: ["192.168.4.1", "192.168.4.84", "192.168.4.27"])) // Filter by your list of src IPs
-			|> map(fn: (r) => ({ r with _time: date.truncate(t: r._time, unit: 1s)}))
+			|> filter(fn: (r) => contains(value: r.src, set: {flux_ip_list})) // Filter by list of src IPs
+			|> map(fn: (r) => ({{ r with _time: date.truncate(t: r._time, unit: 1s)}}))
 			|> keep(columns: ["_time", "src", "dst"])
 			|> group(columns: ["_time", "src", "dst"])
 			|> last(column: "_time")
@@ -103,8 +107,8 @@ def flux_get_data_for_botnet_activity_check():
 	return result
 
 
-def flux_get_recent_flows(device_ip, start_time, end_time):
-	ip_list = [ip.strip() for ip in device_ip.strip('{}').split(',')]
+def flux_get_recent_flows(device_ips_set, start_time, end_time):
+	ip_list = [ip.strip() for ip in device_ips_set.strip('{}').split(',')]
 	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in ip_list]) + "]"
 
 	flux_query = f'''

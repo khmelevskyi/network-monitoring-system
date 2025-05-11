@@ -48,6 +48,208 @@
         "x": 0,
         "y": 0
       },
+      "id": 21,
+      "panels": [],
+      "title": "Devices Info",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P44368ADAD746BC27"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 10,
+        "x": 0,
+        "y": 1
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "last_seen_online"
+          }
+        ]
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P44368ADAD746BC27"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT mac_address, description, last_seen_online\nFROM routers\nWHERE mac_address IN ($router_ip)",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Routers Info",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P44368ADAD746BC27"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "links": [],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 14,
+        "x": 10,
+        "y": 1
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "frameIndex": 1,
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "last_seen_online"
+          }
+        ]
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P44368ADAD746BC27"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT local_ip_address, mac_address, if_blocked, last_seen_online\nFROM devices\nWHERE local_ip_address IN ($device_ip)",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Devices Info",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
       "id": 20,
       "panels": [],
       "title": "Map + IP address details",
@@ -87,7 +289,7 @@
         "h": 12,
         "w": 16,
         "x": 0,
-        "y": 1
+        "y": 8
       },
       "id": 17,
       "options": {
@@ -587,7 +789,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "http://flask_app:5000/get_ip_details",
+          "url": "http://flask_app:5000/api/get_ip_details",
           "url_options": {
             "data": "",
             "headers": [],
@@ -598,7 +800,7 @@
                 "value": "$user_input_ip_address"
               },
               {
-                "key": "device_ip",
+                "key": "device_ips",
                 "value": "$device_ip"
               },
               {
@@ -655,7 +857,7 @@
         "h": 6,
         "w": 7,
         "x": 16,
-        "y": 1
+        "y": 8
       },
       "id": 25,
       "options": {
@@ -725,359 +927,157 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 13
-      },
-      "id": 21,
-      "panels": [],
-      "title": "Devices Info",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "P44368ADAD746BC27"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 10,
-        "x": 0,
-        "y": 14
-      },
-      "id": 10,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "frameIndex": 1,
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "last_seen_online"
-          }
-        ]
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "P44368ADAD746BC27"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT mac_address, description, last_seen_online\nFROM routers\nWHERE mac_address IN ($router_ip)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Routers Info",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "P44368ADAD746BC27"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 14,
-        "x": 10,
-        "y": 14
-      },
-      "id": 7,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "frameIndex": 1,
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "last_seen_online"
-          }
-        ]
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "P44368ADAD746BC27"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT local_ip_address, mac_address, if_blocked, last_seen_online\nFROM devices\nWHERE local_ip_address IN ($device_ip)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Devices Info",
-      "type": "table"
-    },
-    {
-      "collapsed": true,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
         "y": 20
       },
       "id": 22,
-      "panels": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "thresholds"
-              },
-              "mappings": [],
-              "noValue": "0",
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 1
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 0,
-            "y": 53
-          },
-          "id": 6,
-          "options": {
-            "colorMode": "value",
-            "graphMode": "area",
-            "justifyMode": "auto",
-            "orientation": "auto",
-            "percentChangeColorMode": "standard",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": true
-            },
-            "showPercentChange": false,
-            "textMode": "auto",
-            "wideLayout": true
-          },
-          "pluginVersion": "11.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "influxdb",
-                "uid": "P951FEA4DE68E13C5"
-              },
-              "query": "from(bucket: \"network-data\")\n  |> range(start: today())\n  |> filter(fn: (r) => r[\"_measurement\"] == \"suricata_alerts\")\n  |> filter(fn: (r) => r[\"_field\"] == \"alert\")\n  |> keep(columns: [\"_value\"])\n  |> count(column: \"_value\")",
-              "refId": "A"
-            }
-          ],
-          "title": "Suricata Detected Alerts Today",
-          "type": "stat"
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "fieldConfig": {
-            "defaults": {},
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 53
-          },
-          "id": 15,
-          "options": {
-            "dedupStrategy": "none",
-            "enableInfiniteScrolling": false,
-            "enableLogDetails": true,
-            "prettifyLogMessage": false,
-            "showCommonLabels": false,
-            "showLabels": false,
-            "showTime": true,
-            "sortOrder": "Descending",
-            "wrapLogMessage": false
-          },
-          "pluginVersion": "11.5.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "influxdb",
-                "uid": "P951FEA4DE68E13C5"
-              },
-              "query": "from(bucket: \"network-data\")\n  |> range(start: today())\n  |> filter(fn: (r) => r[\"_measurement\"] == \"suricata_alerts\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  ",
-              "refId": "A"
-            }
-          ],
-          "title": "Suricata Alerts Logs (Today)",
-          "transformations": [
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "_start": true,
-                  "_stop": true
-                },
-                "includeByName": {},
-                "indexByName": {
-                  "_measurement": 4,
-                  "_start": 2,
-                  "_stop": 3,
-                  "_time": 1,
-                  "alert": 17,
-                  "classification": 0,
-                  "dst": 5,
-                  "dst_port": 6,
-                  "gid": 18,
-                  "host": 7,
-                  "path": 8,
-                  "priority": 19,
-                  "protocol": 9,
-                  "rev": 20,
-                  "rpi_description": 10,
-                  "rpi_local_ip": 11,
-                  "rpi_mac": 12,
-                  "rpi_public_ip": 13,
-                  "rpi_ssh_username": 14,
-                  "sid": 21,
-                  "src": 15,
-                  "src_port": 16
-                },
-                "renameByName": {}
-              }
-            }
-          ],
-          "transparent": true,
-          "type": "logs"
-        }
-      ],
+      "panels": [],
       "title": "Alerts",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: today())\n  |> filter(fn: (r) => r[\"_measurement\"] == \"suricata_alerts\")\n  |> filter(fn: (r) => r[\"_field\"] == \"alert\")\n  |> keep(columns: [\"_value\"])\n  |> count(column: \"_value\")",
+          "refId": "A"
+        }
+      ],
+      "title": "Suricata Detected Alerts Today",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "id": 15,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: today())\n  |> filter(fn: (r) => r[\"_measurement\"] == \"suricata_alerts\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Suricata Alerts Logs (Today)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "_start": true,
+              "_stop": true
+            },
+            "includeByName": {},
+            "indexByName": {
+              "_measurement": 4,
+              "_start": 2,
+              "_stop": 3,
+              "_time": 1,
+              "alert": 17,
+              "classification": 0,
+              "dst": 5,
+              "dst_port": 6,
+              "gid": 18,
+              "host": 7,
+              "path": 8,
+              "priority": 19,
+              "protocol": 9,
+              "rev": 20,
+              "rpi_description": 10,
+              "rpi_local_ip": 11,
+              "rpi_mac": 12,
+              "rpi_public_ip": 13,
+              "rpi_ssh_username": 14,
+              "sid": 21,
+              "src": 15,
+              "src_port": 16
+            },
+            "renameByName": {}
+          }
+        }
+      ],
+      "transparent": true,
+      "type": "logs"
     },
     {
       "collapsed": false,
@@ -1085,7 +1085,340 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 29
+      },
+      "id": 26,
+      "panels": [],
+      "title": "Total Traffic",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 30
+      },
+      "id": 27,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"protocol\"])\n  |> aggregateWindow(every: 1m, fn: sum, column: \"in_bytes\", createEmpty: false)\n  |> map(fn: (r) => ({ r with in_bytes: float(v: r.in_bytes) / 1024.0 / 1024.0 }))\n  |> keep(columns: [\"_time\", \"protocol\", \"in_bytes\"])\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Incoming Traffic (MB)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 30
+      },
+      "id": 28,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"src\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"protocol\"])\n  |> aggregateWindow(every: 1m, fn: sum, column: \"in_bytes\", createEmpty: false)\n  |> map(fn: (r) => ({ r with in_bytes: float(v: r.in_bytes) / 1024.0 / 1024.0 }))\n  |> keep(columns: [\"_time\", \"protocol\", \"in_bytes\"])\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Outgoing Traffic (MB)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 10000
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 7,
+        "x": 5,
+        "y": 38
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> map(fn: (r) => ({ r with in_bytes: r.in_bytes / 1024 / 1024 }))\n  |> keep(columns: [\"in_bytes\"])\n  |> mean(column: \"in_bytes\")\n\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Average traffic (MB)",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 38
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_packets\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> keep(columns: [\"in_packets\"])\n  |> mean(column: \"in_packets\")\n\n",
+          "refId": "A"
+        }
+      ],
+      "title": "Average Packets",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
       },
       "id": 24,
       "panels": [],
@@ -1117,7 +1450,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 22
+        "y": 42
       },
       "id": 19,
       "options": {
@@ -1182,7 +1515,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 22
+        "y": 42
       },
       "id": 18,
       "options": {
@@ -1226,11 +1559,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 50
       },
       "id": 3,
       "panels": [],
-      "title": "Traffic Flow",
+      "title": "Traffic Flows",
       "type": "row"
     },
     {
@@ -1301,7 +1634,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 31
+        "y": 51
       },
       "id": 1,
       "options": {
@@ -1324,11 +1657,11 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"dst\", \"src\", \"protocol\"])\n  |> map(fn: (r) => ({ r with in_bytes: float(v: r.in_bytes) / 1024.0 / 1024.0 }))\n  |> aggregateWindow(every: 1m, fn: mean, column: \"in_bytes\", createEmpty: false)\n  |> keep(columns: [\"_time\", \"dst\", \"src\", \"protocol\", \"in_bytes\"])\n  ",
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"dst\", \"src\"])\n  |> aggregateWindow(every: 1m, fn: sum, column: \"in_bytes\", createEmpty: false)\n  |> map(fn: (r) => ({ r with in_bytes: float(v: r.in_bytes) / 1024.0 / 1024.0 }))\n  |> keep(columns: [\"_time\", \"dst\", \"src\", \"in_bytes\"])\n  ",
           "refId": "A"
         }
       ],
-      "title": "Traffic Flow (MB)",
+      "title": "Traffic Flows (MB)",
       "type": "timeseries"
     },
     {
@@ -1395,7 +1728,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 31
+        "y": 51
       },
       "id": 4,
       "options": {
@@ -1418,144 +1751,12 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_packets\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"dst\", \"src\", \"protocol\"])\n  |> aggregateWindow(every: 1m, fn: mean, column: \"in_packets\", createEmpty: false)\n  |> keep(columns: [\"_time\", \"dst\", \"src\", \"protocol\", \"in_packets\"])\n  ",
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_packets\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"dst\", \"src\"])\n  |> aggregateWindow(every: 1m, fn: sum, column: \"in_packets\", createEmpty: false)\n  |> keep(columns: [\"_time\", \"dst\", \"src\", \"in_packets\"])\n  ",
           "refId": "A"
         }
       ],
-      "title": "Traffic Flow Packets",
+      "title": "Traffic Flows (# of Packets)",
       "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 10000
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 7,
-        "x": 0,
-        "y": 39
-      },
-      "id": 5,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> map(fn: (r) => ({ r with in_bytes: r.in_bytes / 1024 / 1024 }))\n  |> keep(columns: [\"in_bytes\"])\n  |> mean(column: \"in_bytes\")\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "Average traffic (MB)",
-      "transparent": true,
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 12,
-        "y": 39
-      },
-      "id": 8,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_packets\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> keep(columns: [\"in_packets\"])\n  |> mean(column: \"in_packets\")\n\n",
-          "refId": "A"
-        }
-      ],
-      "title": "Average Packets",
-      "transparent": true,
-      "type": "stat"
     },
     {
       "collapsed": true,
@@ -1563,7 +1764,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 59
       },
       "id": 23,
       "panels": [
@@ -1603,7 +1804,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1618,7 +1820,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 89
+            "y": 60
           },
           "id": 12,
           "options": {
@@ -1651,7 +1853,7 @@
                 "type": "influxdb",
                 "uid": "P951FEA4DE68E13C5"
               },
-              "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"dst\" or r._field == \"src\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"dst\"])\n  |> sum(column: \"in_bytes\")\n  |> map(fn: (r) => ({ r with in_bytes: r.in_bytes / 1024 / 1024 }))\n  |> filter(fn: (r) => r.in_bytes >= 1)\n  |> group()",
+              "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"dst\" or r._field == \"src\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${device_ip:regex}$/ or r.dst =~ /^${device_ip:regex}$/)\n  |> group(columns: [\"dst\"])\n  |> sum(column: \"in_bytes\")\n  |> map(fn: (r) => ({ r with in_bytes: r.in_bytes / 1024 / 1024 }))\n  |> filter(fn: (r) => r.in_bytes >= 0.001)\n  |> group()",
               "refId": "A"
             }
           ],
@@ -1694,7 +1896,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1709,7 +1912,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 89
+            "y": 60
           },
           "id": 11,
           "options": {
@@ -1785,7 +1988,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1800,7 +2004,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 111
+            "y": 68
           },
           "id": 13,
           "options": {
@@ -1880,7 +2084,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1895,7 +2100,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 111
+            "y": 68
           },
           "id": 14,
           "options": {
@@ -1950,7 +2155,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 43
+        "y": 60
       },
       "id": 2,
       "panels": [],
@@ -1987,7 +2192,7 @@
         "h": 7,
         "w": 13,
         "x": 0,
-        "y": 44
+        "y": 61
       },
       "id": 16,
       "options": {
@@ -2205,7 +2410,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "http://flask_app:5000/update_routers",
+          "url": "http://flask_app:5000/api/update_routers",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -2226,7 +2431,7 @@
           "root_selector": "",
           "source": "url",
           "type": "json",
-          "url": "http://flask_app:5000/update_devices",
+          "url": "http://flask_app:5000/api/update_devices",
           "url_options": {
             "data": "",
             "method": "GET"
@@ -2234,214 +2439,6 @@
         }
       ],
       "title": "Check Info",
-      "transparent": true,
-      "type": "canvas"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "P44368ADAD746BC27"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 24,
-        "x": 0,
-        "y": 51
-      },
-      "id": 9,
-      "options": {
-        "infinitePan": false,
-        "inlineEditing": false,
-        "panZoom": false,
-        "root": {
-          "background": {
-            "color": {
-              "fixed": "transparent"
-            },
-            "image": {
-              "field": "current_status",
-              "fixed": "",
-              "mode": "fixed"
-            }
-          },
-          "border": {
-            "color": {
-              "fixed": "dark-green"
-            },
-            "radius": 0,
-            "width": 0
-          },
-          "constraint": {
-            "horizontal": "left",
-            "vertical": "top"
-          },
-          "elements": [
-            {
-              "background": {
-                "color": {
-                  "fixed": "transparent"
-                }
-              },
-              "border": {
-                "color": {
-                  "fixed": "transparent"
-                },
-                "radius": 60,
-                "width": 2
-              },
-              "config": {
-                "align": "center",
-                "api": {
-                  "contentType": "application/json",
-                  "data": "{}",
-                  "endpoint": "http://flask_app:5000/$router_ip/$device_ip",
-                  "headerParams": [],
-                  "method": "GET",
-                  "queryParams": []
-                },
-                "color": {
-                  "field": "possible_action",
-                  "fixed": "#F0F4FD"
-                },
-                "size": 14,
-                "style": {
-                  "variant": "destructive"
-                },
-                "text": {
-                  "field": "possible_action",
-                  "fixed": "",
-                  "mode": "field"
-                }
-              },
-              "constraint": {
-                "horizontal": "left",
-                "vertical": "top"
-              },
-              "links": [],
-              "name": "Element 2",
-              "oneClickMode": "off",
-              "placement": {
-                "height": 45,
-                "left": 342,
-                "rotation": 0,
-                "top": 78,
-                "width": 150
-              },
-              "type": "button"
-            },
-            {
-              "background": {
-                "color": {
-                  "fixed": "transparent"
-                },
-                "size": "cover"
-              },
-              "border": {
-                "color": {
-                  "field": "current_status",
-                  "fixed": "dark-green"
-                },
-                "radius": 20,
-                "width": 6
-              },
-              "config": {
-                "align": "center",
-                "color": {
-                  "field": "current_status",
-                  "fixed": "#000000"
-                },
-                "size": 20,
-                "text": {
-                  "field": "current_status",
-                  "fixed": "",
-                  "mode": "field"
-                },
-                "valign": "middle"
-              },
-              "constraint": {
-                "horizontal": "left",
-                "vertical": "top"
-              },
-              "links": [],
-              "name": "Element 1",
-              "oneClickMode": "off",
-              "placement": {
-                "height": 50,
-                "left": 20,
-                "rotation": 0,
-                "top": 73,
-                "width": 260
-              },
-              "type": "metric-value"
-            }
-          ],
-          "name": "Element 1741394028464",
-          "oneClickMode": "off",
-          "placement": {
-            "height": 100,
-            "left": 0,
-            "rotation": 0,
-            "top": 0,
-            "width": 100
-          },
-          "type": "frame"
-        },
-        "showAdvancedTypes": false
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "P44368ADAD746BC27"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT \n  (CASE WHEN if_blocked IS false THEN 'unblocked' ELSE 'blocked' END) AS current_status,\n  (CASE WHEN if_blocked IS false THEN 'Block device' ELSE 'Unblock device' END) AS possible_action\nFROM devices\nWHERE local_ip_address IN ($device_ip)",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "title": "Panel Title",
       "transparent": true,
       "type": "canvas"
     }
@@ -2542,6 +2539,6 @@
   "timezone": "browser",
   "title": "Main Dashboard",
   "uid": "ceen9fgo73wu8a",
-  "version": 77,
+  "version": 81,
   "weekStart": ""
 }

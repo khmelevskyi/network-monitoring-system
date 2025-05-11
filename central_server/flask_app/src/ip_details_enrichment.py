@@ -23,14 +23,14 @@ def enrich_ips(ip_address=None):
 	# get a set of already enriched ips for the last month
 	one_month_ago = datetime.utcnow() - timedelta(days=30)
 	recent_ips = db.session.query(public_IP_detail.ip).filter(public_IP_detail.last_updated_at >= one_month_ago).all()
-	recent_ip_set = {ip[0] for ip in recent_ips}
-	print("The amount of recent_ips in PostgreSQL table:", len(recent_ip_set))
+	recent_ips_set = {ip[0] for ip in recent_ips}
+	print("The amount of recent_ips in PostgreSQL table:", len(recent_ips_set))
 
 	# get a list of ip addresses in InfluxDB for the last 5 minutes
 	result = flux_get_unique_ip_addresses(ip_address)
 
 	# enrich IPs that need to be enriched
-	extra_ips = 0
+	extra_ip_requests_count = 0
 	enriched_ips_data = []
 	for table in result:
 		for record in table.records:
@@ -39,8 +39,8 @@ def enrich_ips(ip_address=None):
 			if is_private_ip(public_ip):
 				continue
 
-			if public_ip in recent_ip_set:
-				extra_ips += 1
+			if public_ip in recent_ips_set:
+				extra_ip_requests_count += 1
 				continue
 
 			# Fetch GeoIP & Hostname data from ipinfo.io
@@ -85,7 +85,7 @@ def enrich_ips(ip_address=None):
 			except requests.RequestException:
 				print(f"Error fetching data for IP: {public_ip}")
 
-	print("Extra requests for IPInfo API that could have been made:", extra_ips)
+	print("Extra requests for IPInfo API that could have been made:", extra_ip_requests_count)
 
 	#### SAVE/UPSERT TO POSTGRESQL
 	if enriched_ips_data:
