@@ -63,7 +63,7 @@ services:
     container_name: central_grafana
     restart: unless-stopped
     ports:
-      - 3000:3000
+      - ${GRAFANA_BIND_PORT}:3000
     env_file:
       .env
     environment:
