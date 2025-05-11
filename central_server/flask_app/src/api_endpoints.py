@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy.exc import IntegrityError
 
-from src.models import db, Router, Device, public_IP_detail
+from src.models import db, Router, Device, Public_IP_Detail
 from src.ip_details_enrichment import enrich_ips
 from src.influxdb_funcs import (
 	flux_get_recent_flows,
@@ -101,12 +101,12 @@ def api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time):
 	if ip_to_lookup: # if needed IP detail only for one IP address
 		print("Specific IP address to lookup by:", ip_to_lookup)
 		# Query PostgreSQL to get IP detail for the specific IP
-		ip_detail = public_IP_detail.query.filter_by(ip=ip_to_lookup).first()
+		ip_detail = Public_IP_Detail.query.filter_by(ip=ip_to_lookup).first()
 
 		# if no such IP in PostgreSQL table yet, then enrich IP, add to the table and try again
 		if not ip_detail:
 			enrich_ips(ip_to_lookup)
-			ip_detail = public_IP_detail.query.filter_by(ip=ip_to_lookup).first()
+			ip_detail = Public_IP_Detail.query.filter_by(ip=ip_to_lookup).first()
 
 		# Prepare the result to be returned as JSON
 		result ={
@@ -146,7 +146,7 @@ def api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time):
 
 
 	# Query PostgreSQL to get details for these unique IPs
-	ip_details = public_IP_detail.query.filter(public_IP_detail.ip.in_(unique_ips)).all()
+	ip_details = Public_IP_Detail.query.filter(Public_IP_Detail.ip.in_(unique_ips)).all()
 
 	# Prepare the result to be returned as JSON
 	results = []

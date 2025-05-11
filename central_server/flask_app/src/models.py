@@ -42,7 +42,7 @@ class Device(db.Model):
 
 # Enriched Public IPs table
 # Public IPs to which devices have connected at some point of time
-class public_IP_detail(db.Model):
+class Public_IP_Detail(db.Model):
 	__tablename__ = 'public_ip_details'
 
 	ip = db.Column(db.String(64), nullable=False, primary_key=True)
@@ -58,3 +58,23 @@ class public_IP_detail(db.Model):
 	last_updated_at = db.Column(db.DateTime)
 
 
+# Anomaly Alerts table
+class Anomaly_Alert(db.Model):
+    __tablename__ = 'anomaly_alerts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    alert_type = db.Column(db.String(64), nullable=False)  # 'suricata' or 'ips_entropy_anomaly', 'potential_botnet_activity'
+    classification = db.Column(db.String(128), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    priority = db.Column(db.Integer, nullable=True)
+
+    alert_time = db.Column(db.DateTime)
+
+    src_ip = db.Column(db.String(64), nullable=True)
+    src_port = db.Column(db.Integer, nullable=True)
+    dst_ip = db.Column(db.String(64), nullable=True)
+    dst_port = db.Column(db.Integer, nullable=True)
+    protocol = db.Column(db.String(16), nullable=True)
+
+    router_mac = db.Column(db.String(64), nullable=False)
+    router_public_ip = db.Column(db.String(64), nullable=False)

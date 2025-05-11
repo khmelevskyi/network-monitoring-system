@@ -73,13 +73,12 @@ def flux_get_data_for_ip_entropy_check(device_ips_set):
 
 	flux_query = f'''
 		from(bucket: "network-data")
-			|> range(start: -15m)
+			|> range(start: -30m)
 			|> filter(fn: (r) => r._measurement == "netflow")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 			|> filter(fn: (r) => contains(value: r.src, set: {flux_ip_list})) // Filter by list of src IPs
-			|> group(columns: ["src", "dst"])
+			|> group(columns: ["src", "dst", "rpi_mac", "rpi_public_ip"])
 			|> sum(column: "in_bytes")  // total per (src, dst)
-			|> group(columns: ["src"])  // regroup by src for entropy
 	'''
 
 	result = execute_flux_query(flux_query)
@@ -92,13 +91,13 @@ def flux_get_data_for_botnet_activity_check(device_ips_set):
 	flux_query = f'''
 		import "date"
 		from(bucket: "network-data")
-			|> range(start: -30m)
+			|> range(start: -1h)
 			|> filter(fn: (r) => r._measurement == "netflow")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 			|> filter(fn: (r) => contains(value: r.src, set: {flux_ip_list})) // Filter by list of src IPs
 			|> map(fn: (r) => ({{ r with _time: date.truncate(t: r._time, unit: 1s)}}))
-			|> keep(columns: ["_time", "src", "dst"])
-			|> group(columns: ["_time", "src", "dst"])
+			|> keep(columns: ["_time", "src", "dst", "rpi_mac", "rpi_public_ip"])
+			|> group(columns: ["_time", "src", "dst", "rpi_mac", "rpi_public_ip"])
 			|> last(column: "_time")
 			|> sort(columns: ["src", "dst", "_time"])
 	'''
@@ -120,6 +119,21 @@ def flux_get_recent_flows(device_ips_set, start_time, end_time):
 			|> filter(fn: (r) => contains(value: r.dst, set: {flux_ip_list}) or contains(value: r.src, set: {flux_ip_list}))
 			|> keep(columns: ["dst", "src"])
 		'''
+
+	result = execute_flux_query(flux_query)
+	return result
+
+
+
+def flux_get_suricata_alerts():
+	flux_query = f'''
+		from(bucket: "network-data")
+			|> range(start: today())
+			|> filter(fn: (r) => r["_measurement"] == "suricata_alerts")
+			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+			|> group()
+  
+	'''
 
 	result = execute_flux_query(flux_query)
 	return result

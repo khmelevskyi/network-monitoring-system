@@ -1,7 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.ip_details_enrichment import enrich_ips
-from src.anomaly_detectors import check_entropy_anomaly, check_botnet_activity
+from src.anomaly_detectors import check_all_anomalies
 
 
 scheduler = BackgroundScheduler()
@@ -24,10 +24,10 @@ def start_scheduler(app):
 	)
 
 	scheduler.add_job(
-		func=wrap_with_context(check_entropy_anomaly),
+		func=wrap_with_context(check_all_anomalies),
 		trigger="interval",
 		minutes=1,
-		id="check_entropy_anomaly",
+		id="check_all_anomalies",
 		replace_existing=True
 	)
 

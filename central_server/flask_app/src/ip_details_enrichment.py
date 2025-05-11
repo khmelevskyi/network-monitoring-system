@@ -6,7 +6,7 @@ import requests
 from sqlalchemy.dialects.postgresql import insert as postgresql_insert
 
 from src.config import IPINFO_TOKEN
-from src.models import db, public_IP_detail
+from src.models import db, Public_IP_Detail
 from src.influxdb_funcs import flux_get_unique_ip_addresses
 
 
@@ -22,7 +22,7 @@ def is_private_ip(ip):
 def enrich_ips(ip_address=None):
 	# get a set of already enriched ips for the last month
 	one_month_ago = datetime.utcnow() - timedelta(days=30)
-	recent_ips = db.session.query(public_IP_detail.ip).filter(public_IP_detail.last_updated_at >= one_month_ago).all()
+	recent_ips = db.session.query(Public_IP_Detail.ip).filter(Public_IP_Detail.last_updated_at >= one_month_ago).all()
 	recent_ips_set = {ip[0] for ip in recent_ips}
 	print("The amount of recent_ips in PostgreSQL table:", len(recent_ips_set))
 
@@ -90,7 +90,7 @@ def enrich_ips(ip_address=None):
 	#### SAVE/UPSERT TO POSTGRESQL
 	if enriched_ips_data:
 		try:
-			stmt = postgresql_insert(public_IP_detail.__table__).values(enriched_ips_data)
+			stmt = postgresql_insert(Public_IP_Detail.__table__).values(enriched_ips_data)
 			stmt = stmt.on_conflict_do_update(
 				index_elements=['ip'],  # The primary key to check for conflicts
 				set_={

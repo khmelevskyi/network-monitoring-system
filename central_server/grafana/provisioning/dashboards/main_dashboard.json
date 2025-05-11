@@ -48,6 +48,164 @@
         "x": 0,
         "y": 0
       },
+      "id": 31,
+      "panels": [],
+      "title": "Alerts",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P44368ADAD746BC27"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "id": 29,
+      "options": {
+        "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P44368ADAD746BC27"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  alert_time, classification, alert_type, description, priority,\n  src_ip, src_port, dst_ip, dst_port, protocol,\n  router_mac, router_public_ip\nFROM anomaly_alerts\nWHERE alert_time::date = CURRENT_DATE;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Anomalies Alerts Logs (Today)",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "P44368ADAD746BC27"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "P44368ADAD746BC27"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT COUNT(*)\nFROM anomaly_alerts\nWHERE alert_time::date = CURRENT_DATE;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "# of Anomaly Alerts (Today)",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
       "id": 21,
       "panels": [],
       "title": "Devices Info",
@@ -91,7 +249,7 @@
         "h": 6,
         "w": 10,
         "x": 0,
-        "y": 1
+        "y": 10
       },
       "id": 10,
       "options": {
@@ -186,7 +344,7 @@
         "h": 6,
         "w": 14,
         "x": 10,
-        "y": 1
+        "y": 10
       },
       "id": 7,
       "options": {
@@ -248,7 +406,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 16
       },
       "id": 20,
       "panels": [],
@@ -289,7 +447,7 @@
         "h": 12,
         "w": 16,
         "x": 0,
-        "y": 8
+        "y": 17
       },
       "id": 17,
       "options": {
@@ -857,7 +1015,7 @@
         "h": 6,
         "w": 7,
         "x": 16,
-        "y": 8
+        "y": 17
       },
       "id": 25,
       "options": {
@@ -927,164 +1085,6 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
-      },
-      "id": 22,
-      "panels": [],
-      "title": "Alerts",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "noValue": "0",
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 1
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 21
-      },
-      "id": 6,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": true
-        },
-        "showPercentChange": false,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket: \"network-data\")\n  |> range(start: today())\n  |> filter(fn: (r) => r[\"_measurement\"] == \"suricata_alerts\")\n  |> filter(fn: (r) => r[\"_field\"] == \"alert\")\n  |> keep(columns: [\"_value\"])\n  |> count(column: \"_value\")",
-          "refId": "A"
-        }
-      ],
-      "title": "Suricata Detected Alerts Today",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "P951FEA4DE68E13C5"
-      },
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 21
-      },
-      "id": 15,
-      "options": {
-        "dedupStrategy": "none",
-        "enableInfiniteScrolling": false,
-        "enableLogDetails": true,
-        "prettifyLogMessage": false,
-        "showCommonLabels": false,
-        "showLabels": false,
-        "showTime": true,
-        "sortOrder": "Descending",
-        "wrapLogMessage": false
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "P951FEA4DE68E13C5"
-          },
-          "query": "from(bucket: \"network-data\")\n  |> range(start: today())\n  |> filter(fn: (r) => r[\"_measurement\"] == \"suricata_alerts\")\n  |> pivot(rowKey:[\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> group()\n  ",
-          "refId": "A"
-        }
-      ],
-      "title": "Suricata Alerts Logs (Today)",
-      "transformations": [
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "_start": true,
-              "_stop": true
-            },
-            "includeByName": {},
-            "indexByName": {
-              "_measurement": 4,
-              "_start": 2,
-              "_stop": 3,
-              "_time": 1,
-              "alert": 17,
-              "classification": 0,
-              "dst": 5,
-              "dst_port": 6,
-              "gid": 18,
-              "host": 7,
-              "path": 8,
-              "priority": 19,
-              "protocol": 9,
-              "rev": 20,
-              "rpi_description": 10,
-              "rpi_local_ip": 11,
-              "rpi_mac": 12,
-              "rpi_public_ip": 13,
-              "rpi_ssh_username": 14,
-              "sid": 21,
-              "src": 15,
-              "src_port": 16
-            },
-            "renameByName": {}
-          }
-        }
-      ],
-      "transparent": true,
-      "type": "logs"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
         "y": 29
       },
       "id": 26,
@@ -1119,7 +1119,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -1213,7 +1213,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -1691,7 +1691,7 @@
               "viz": false
             },
             "insertNulls": false,
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
@@ -1820,7 +1820,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 60
+            "y": 68
           },
           "id": 12,
           "options": {
@@ -1912,7 +1912,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 60
+            "y": 68
           },
           "id": 11,
           "options": {
@@ -2004,7 +2004,7 @@
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 68
+            "y": 76
           },
           "id": 13,
           "options": {
@@ -2100,7 +2100,7 @@
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 68
+            "y": 76
           },
           "id": 14,
           "options": {
@@ -2536,9 +2536,9 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "utc",
   "title": "Main Dashboard",
   "uid": "ceen9fgo73wu8a",
-  "version": 81,
+  "version": 82,
   "weekStart": ""
 }
