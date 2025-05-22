@@ -1,13 +1,13 @@
 import json
 from datetime import datetime
 
-from flask_login import login_user, logout_user, login_required
+from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 
 from src.app import login_manager
 from src.decorators import admin_required
-from src.models import db, User, Router, Device
+from src.models import db, User, Router, Device, Custom_IP_List_Entry
 from src.ssh_client import ssh_block_device, ssh_unblock_device
 from src.api_endpoints import api_update_routers, api_update_devices, api_get_ip_details
 # from src.anomaly_detectors import check_entropy_anomaly, check_botnet_activity
@@ -59,6 +59,7 @@ def first_page():
 def dashboard():
 	routers = Router.query.order_by(Router.last_seen_online.desc()).all()
 	return render_template("dashboard.html", routers=routers)
+### \
 
 
 ### Admin section
@@ -111,6 +112,56 @@ def create_user():
 	db.session.commit()
 	flash("User created successfully!", "success")
 	return redirect(url_for("main.admin_panel"))
+### \
+
+
+
+# Public IPs whitelist / blacklist logic
+# View IP Lists
+@main_bp.route("/ip_lists")
+@login_required
+def view_ip_lists():
+    blacklisted = Custom_IP_List_Entry.query.filter_by(label='blacklist').all()
+    whitelisted = Custom_IP_List_Entry.query.filter_by(label='whitelist').all()
+    return render_template("ip_lists.html", blacklisted=blacklisted, whitelisted=whitelisted)
+
+# Add IP to List
+@main_bp.route("/ip_lists/add", methods=["POST"])
+@admin_required
+def add_ip_to_list():
+    ip_address = request.form["ip_address"]
+    label = request.form["label"]
+    reason = request.form.get("reason", "")
+
+    if label not in ["blacklist", "whitelist"]:
+        flash("Invalid label", "danger")
+        return redirect(url_for("main.view_ip_lists"))
+
+    if Custom_IP_List_Entry.query.filter_by(ip_address=ip_address).first():
+        flash("IP address already exists in the list.", "warning")
+    else:
+        new_entry = Custom_IP_List_Entry(
+            ip_address=ip_address,
+            label=label,
+            reason=reason,
+            added_by=current_user.username
+        )
+        db.session.add(new_entry)
+        db.session.commit()
+        flash(f"{label.capitalize()} entry added for {ip_address}.", "success")
+
+    return redirect(url_for("main.view_ip_lists"))
+
+# Delete IP from List
+@main_bp.route("/ip_lists/delete/<int:entry_id>")
+@admin_required
+def delete_ip_from_list(entry_id):
+    entry = Custom_IP_List_Entry.query.get_or_404(entry_id)
+    db.session.delete(entry)
+    db.session.commit()
+    flash("IP entry deleted successfully.", "info")
+    return redirect(url_for("main.view_ip_lists"))
+### \
 
 
 ### API endpoints for Grafana and also web-interface
@@ -141,6 +192,7 @@ def route_get_ip_details():
 	result = api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time)
 
 	return result
+### \
 
 
 
@@ -157,11 +209,12 @@ def route_block_device(rpi_mac, mac):
 
 @main_bp.route("/unblock/<rpi_mac>/<mac>")
 @admin_required
-def unblock_device(rpi_mac, mac):
+def route_unblock_device(rpi_mac, mac):
 	ssh_unblock_device(rpi_mac, mac)
 
 	flash(result, "info")
 	return redirect(url_for("main.dashboard"))
+### \
 
 
 

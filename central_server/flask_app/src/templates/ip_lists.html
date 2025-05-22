@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}IP Lists Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">IP Lists Management</h2>
+        <div>
+            {% if current_user.role == 'admin' %} 
+                <a href="{{ url_for('main.admin_panel') }}" class="btn btn-secondary me-2">Back to Admin Panel</a>
+            {% endif %}
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary me-2">Back to Dashboard</a>
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+
+    <!-- Add IP Form (Admins only) -->
+    {% if current_user.role == 'admin' %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Add IP Address</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('main.add_ip_to_list') }}" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="ip_address" class="form-control" placeholder="IP Address" required>
+                </div>
+                <div class="col-md-3">
+                    <select name="label" class="form-select">
+                        <option value="blacklist">Blacklist</option>
+                        <option value="whitelist">Whitelist</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="reason" class="form-control" placeholder="Reason (optional)">
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Blacklisted IPs -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0">Blacklisted IPs</h5>
+        </div>
+        <div class="card-body">
+            {% if blacklisted %}
+            <ul class="list-group">
+                {% for ip in blacklisted %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ ip.ip_address }}</strong> - {{ ip.reason or 'No reason' }} 
+                        <small class="text-muted">(added by {{ ip.added_by }})</small>
+                    </div>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('main.delete_ip_from_list', entry_id=ip.id) }}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">No blacklisted IPs.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Whitelisted IPs -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Whitelisted IPs</h5>
+        </div>
+        <div class="card-body">
+            {% if whitelisted %}
+            <ul class="list-group">
+                {% for ip in whitelisted %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ ip.ip_address }}</strong> - {{ ip.reason or 'No reason' }} 
+                        <small class="text-muted">(added by {{ ip.added_by }})</small>
+                    </div>
+                    {% if current_user.role == 'admin' %}
+                    <a href="{{ url_for('main.delete_ip_from_list', entry_id=ip.id) }}" class="btn btn-outline-danger btn-sm">Delete</a>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted">No whitelisted IPs.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

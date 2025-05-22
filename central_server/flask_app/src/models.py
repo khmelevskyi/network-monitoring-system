@@ -78,3 +78,16 @@ class Anomaly_Alert(db.Model):
 
     router_mac = db.Column(db.String(64), nullable=False)
     router_public_ip = db.Column(db.String(64), nullable=False)
+
+
+
+# Blacklist / Whitelist table for public IPs
+class Custom_IP_List_Entry(db.Model):
+    __tablename__ = 'custom_ip_list_entries'
+
+    id = db.Column(db.Integer, primary_key=True)
+    ip_address = db.Column(db.String(64), nullable=False, unique=True)
+    label = db.Column(db.String(16), nullable=False)  # 'blacklist' or 'whitelist'
+    reason = db.Column(db.String(256), nullable=True)
+    added_by = db.Column(db.String(64), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)

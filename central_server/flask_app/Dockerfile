@@ -9,5 +9,4 @@ COPY ./migrations/ ./migrations/
 COPY ./run.py .
 COPY ./src/ ./src/
 
-#CMD ["sleep", "3600"]
 CMD ["sh", "-c", "flask --app src.app:create_app db upgrade && python3 run.py"]

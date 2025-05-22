@@ -10,6 +10,7 @@
         <div>
             <a href="{{ url_for('main.route_update_devices') }}" class="btn btn-info">Update Devices List</a>
             <a href="{{ url_for('main.route_update_routers') }}" class="btn btn-info">Update Routers List</a>
+            <a href="{{ url_for('main.view_ip_lists') }}" class="btn btn-secondary">View IP whitelist/blacklist</a>
             {% if current_user.role == 'admin' %}  
                 <a href="{{ url_for('main.admin_panel') }}" class="btn btn-secondary">Admin Panel</a>
             {% endif %}

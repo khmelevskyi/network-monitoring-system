@@ -72,7 +72,7 @@ def flux_get_data_for_ip_entropy_check(device_ips_set):
 	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in device_ips_set]) + "]"
 
 	flux_query = f'''
-		from(bucket: "network-data")
+		from(bucket: "{INFLUXDB_BUCKET}")
 			|> range(start: -30m)
 			|> filter(fn: (r) => r._measurement == "netflow")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
@@ -90,7 +90,7 @@ def flux_get_data_for_botnet_activity_check(device_ips_set):
 
 	flux_query = f'''
 		import "date"
-		from(bucket: "network-data")
+		from(bucket: "{INFLUXDB_BUCKET}")
 			|> range(start: -1h)
 			|> filter(fn: (r) => r._measurement == "netflow")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
@@ -104,6 +104,39 @@ def flux_get_data_for_botnet_activity_check(device_ips_set):
 
 	result = execute_flux_query(flux_query)
 	return result
+
+
+def flux_get_suricata_alerts():
+	flux_query = f'''
+		from(bucket: "{INFLUXDB_BUCKET}")
+			|> range(start: today())
+			|> filter(fn: (r) => r["_measurement"] == "suricata_alerts")
+			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+			|> group()
+  
+	'''
+
+	result = execute_flux_query(flux_query)
+	return result
+
+
+def flux_get_recent_flows_for_blacklist_ip_anomaly_check(device_ips_set):
+	ip_list = [ip.strip() for ip in device_ips_set.strip('{}').split(',')]
+	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in ip_list]) + "]"
+
+	flux_query = f'''
+		from(bucket: "{INFLUXDB_BUCKET}")
+			|> range(start: -5m)
+			|> filter(fn: (r) => r._measurement == "netflow")
+			|> filter(fn: (r) => r._field == "src" or r._field == "dst")
+			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+			|> filter(fn: (r) => contains(value: r.dst, set: {flux_ip_list}) or contains(value: r.src, set: {flux_ip_list}))
+			|> keep(columns: ["dst", "src"])
+		'''
+
+	result = execute_flux_query(flux_query)
+	return result
+
 
 
 def flux_get_recent_flows(device_ips_set, start_time, end_time):
@@ -123,17 +156,3 @@ def flux_get_recent_flows(device_ips_set, start_time, end_time):
 	result = execute_flux_query(flux_query)
 	return result
 
-
-
-def flux_get_suricata_alerts():
-	flux_query = f'''
-		from(bucket: "network-data")
-			|> range(start: today())
-			|> filter(fn: (r) => r["_measurement"] == "suricata_alerts")
-			|> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
-			|> group()
-  
-	'''
-
-	result = execute_flux_query(flux_query)
-	return result

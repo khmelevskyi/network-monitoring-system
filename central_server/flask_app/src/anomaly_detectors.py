@@ -2,11 +2,15 @@ import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
 
-from src.models import db, Device, Anomaly_Alert
+from src.models import db, Device, Anomaly_Alert, Custom_IP_List_Entry
 from src.influxdb_funcs import (flux_get_data_for_ip_entropy_check,
 								flux_get_data_for_botnet_activity_check,
-								flux_get_suricata_alerts)
+								flux_get_suricata_alerts,
+								flux_get_recent_flows_for_blacklist_ip_anomaly_check)
 
+
+def is_ip_whitelisted(ip):
+	return Custom_IP_List_Entry.query.filter_by(ip_address=ip, label='whitelist').first() is not None
 
 
 def check_entropy_anomaly():
@@ -19,6 +23,11 @@ def check_entropy_anomaly():
 		for record in table.records:
 			data.append(record.values)
 	df = pd.DataFrame(data)
+
+	if df.empty:
+		print("No data to check for entropy anomaly")
+		return None
+
 	print("The DF for check entropy anomaly\n", df[["src", "dst", "in_bytes"]])
 
 	for src_ip, group in df.groupby('src'):
@@ -34,6 +43,11 @@ def check_entropy_anomaly():
 		# Detection rule (traffic more than 1 MB and entropy less than 1)
 		if total_bytes > 1_048_576 and entropy < 1.0:
 			print("  ⚠️  Potential data exfiltration detected")
+
+			# Skip if all of the dst IPs are whitelisted
+			if all(is_ip_whitelisted(dst_ip) for dst_ip in group['dst'].unique()):
+				print(f"Whitelisted IPs for {src_ip}: {[dst_ip for dst_ip in group['dst'].unique()]}")
+				continue
 
 			total_mbytes = round(total_bytes / 1024 / 1024, 2)
 			recent_time_threshold = datetime.utcnow() - timedelta(seconds=3600)
@@ -70,6 +84,11 @@ def check_botnet_activity():
 		for record in table.records:
 			data.append(record.values)
 	df = pd.DataFrame(data)
+
+	if df.empty:
+		print("No data to check for botnet activity")
+		return None
+
 	print("The DF for check botnet activity\n", df[["src", "dst"]])
 
 	# Detect suspicious periodic communication per (src, dst)
@@ -89,6 +108,12 @@ def check_botnet_activity():
 
 			if stddev < 30 and mean > 60:  # at least every ~60s with low variation of less than 30 seconds
 				print(f"{src} -> {dst}  ⚠️  Suspicious periodic communication detected\n")
+
+				# Skip if dst IP is whitelisted
+				if is_ip_whitelisted(dst):
+					print(f"Whitelisted IP: {dst}")
+					continue
+
 				recent_time_threshold = datetime.utcnow() - timedelta(seconds=3600)
 				existing = Anomaly_Alert.query.filter_by(
 					alert_type="potential_botnet_activity",
@@ -103,7 +128,7 @@ def check_botnet_activity():
 						description=f"Suspicious periodic communication (mean={mean:.2f}s, stddev={stddev:.2f}s)\n"\
 									"Device behavior resembles known botnet patterns "\
 									"(e.g., frequent small outbound flows to many IPs)",
-						priority=1,
+						priority=2,
 						alert_time=group["_time"],
 						src_ip=src,
 						dst_ip=dst,
@@ -122,7 +147,7 @@ def check_suricata_alerts():
 		for record in table.records:
 			r = record.values
 			alert_time = r["_time"]
-			alert_type = r.get("_measurement")
+			alert_type = "suricata"
 			classification = r.get("classification")
 			description = r.get("alert")
 			priority = r["priority"]
@@ -133,6 +158,11 @@ def check_suricata_alerts():
 			protocol = r.get("protocol")
 			router_mac = r.get("rpi_mac")
 			router_public_ip = r.get("rpi_public_ip")
+
+			# Skip if dst IP is whitelisted
+			if is_ip_whitelisted(src_ip) or is_ip_whitelisted(dst_ip):
+				print(f"Whitelisted IP: {src_ip} or {dst_ip}")
+				continue
 
 			existing = Anomaly_Alert.query.filter_by(
 				alert_time=alert_time,
@@ -165,7 +195,50 @@ def check_suricata_alerts():
 
 
 
+def check_blacklisted_connections():
+	device_ips = db.session.query(Device.local_ip_address).all()
+	device_ips_set = {ip[0] for ip in device_ips}
+
+	# Get all blacklisted IPs into a set
+	blacklisted_ips = {e.ip_address for e in IPListEntry.query.filter_by(label='blacklist').all()}
+
+	if not blacklisted_ips:
+		return
+
+	tables = flux_get_recent_flows_for_blacklist_ip_anomaly_check(device_ips_set)
+
+	for table in tables:
+		for record in table.records:
+			r = record.values
+			src = r.get('src')
+			dst = r.get('dst')
+			if dst in blacklisted_ips:
+				recent_time_threshold = datetime.utcnow() - timedelta(seconds=3600)
+				existing = Anomaly_Alert.query.filter_by(
+					alert_type="blacklisted_ip",
+					src_ip=src,
+					dst_ip=dst
+				).filter(Anomaly_Alert.alert_time >= recent_time_threshold).first()
+
+				if not existing:
+					new_alert = Anomaly_Alert(
+						alert_type="blacklisted_ip",
+						classification="Connection to Blacklisted IP",
+						description=f"Device {src} connected to blacklisted IP {dst}",
+						priority=1,
+						alert_time=r["_time"],
+						src_ip=src,
+						dst_ip=dst,
+						router_mac=r['rpi_mac'],
+						router_public_ip=r['rpi_public_ip']
+					)
+					db.session.add(new_alert)
+	db.session.commit()
+
+
+
 def check_all_anomalies():
 	check_entropy_anomaly()
 	check_botnet_activity()
 	check_suricata_alerts()
+	# check_blacklisted_connections()
