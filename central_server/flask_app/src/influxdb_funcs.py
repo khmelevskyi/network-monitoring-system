@@ -120,9 +120,8 @@ def flux_get_suricata_alerts():
 	return result
 
 
-def flux_get_recent_flows_for_blacklist_ip_anomaly_check(device_ips_set):
-	ip_list = [ip.strip() for ip in device_ips_set.strip('{}').split(',')]
-	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in ip_list]) + "]"
+def flux_get_recent_flows_for_anomaly_checks(device_ips_set):
+	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in device_ips_set]) + "]"
 
 	flux_query = f'''
 		from(bucket: "{INFLUXDB_BUCKET}")
@@ -131,7 +130,7 @@ def flux_get_recent_flows_for_blacklist_ip_anomaly_check(device_ips_set):
 			|> filter(fn: (r) => r._field == "src" or r._field == "dst")
 			|> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
 			|> filter(fn: (r) => contains(value: r.dst, set: {flux_ip_list}) or contains(value: r.src, set: {flux_ip_list}))
-			|> keep(columns: ["dst", "src"])
+			|> keep(columns: ["_time", "dst", "src", "rpi_mac", "rpi_public_ip"])
 		'''
 
 	result = execute_flux_query(flux_query)
@@ -139,8 +138,8 @@ def flux_get_recent_flows_for_blacklist_ip_anomaly_check(device_ips_set):
 
 
 
-def flux_get_recent_flows(device_ips_set, start_time, end_time):
-	ip_list = [ip.strip() for ip in device_ips_set.strip('{}').split(',')]
+def flux_get_recent_flows(device_ips_set_string, start_time, end_time):
+	ip_list = [ip.strip() for ip in device_ips_set_string.strip('{}').split(',')]
 	flux_ip_list = "[" + ", ".join(['"' + ip + '"' for ip in ip_list]) + "]"
 
 	flux_query = f'''

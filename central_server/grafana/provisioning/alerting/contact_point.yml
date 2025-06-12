@@ -12,11 +12,16 @@ contactPoints:
             disable_notification: false
             disable_web_page_preview: false
             message: |-
-                The anomaly was detected⚠️
+                The anomaly was detected ⚠️
 
                 Check the dashboard <b>ASAP</b>!
 
-                The details:
+                {{ range .Alerts.Firing }}
+                🛑 <b>{{ html .Labels.alertname }}</b>
+
+                📋 The details:
+                {{ html .Annotations.summary }}
+                {{ end }}
             parse_mode: HTML
             protect_content: false
           disableResolveMessage: true

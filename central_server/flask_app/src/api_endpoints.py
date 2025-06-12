@@ -135,8 +135,8 @@ def api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time):
 			data.append(record.values)
 	df = pd.DataFrame(data)
 
-	print("The DF head for returning IP details\n", df.head())
-	print("The DF tail for returning IP details\n", df.tail())
+	# print("The DF head for returning IP details\n", df.head())
+	# print("The DF tail for returning IP details\n", df.tail())
 
 	if df.empty:
 		return json.dumps({})
