@@ -36,7 +36,7 @@
       "title": "Manage Devices",
       "tooltip": "",
       "type": "link",
-      "url": "http://127.0.0.1:5000/dashboard"
+      "url": "http://192.168.0.45:5000/dashboard"
     }
   ],
   "panels": [
@@ -64,7 +64,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 1
       },
@@ -145,7 +145,7 @@
       "gridPos": {
         "h": 8,
         "w": 6,
-        "x": 12,
+        "x": 8,
         "y": 1
       },
       "id": 30,
@@ -196,7 +196,118 @@
         }
       ],
       "title": "# of Anomaly Alerts (Today)",
+      "transparent": true,
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Traffic (MB)",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 10,
+        "x": 14,
+        "y": 1
+      },
+      "id": 32,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\")\n  |> keep(columns: [\"_time\", \"_value\"])\n  |> aggregateWindow(every: 5m, fn: sum, column: \"_value\", createEmpty: false)\n  |> map(fn: (r) => ({ r with _value: float(v: r._value) / 1024.0 / 1024.0 }))\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Traffic (MB) + Alerts",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {},
+            "renameByName": {
+              "Time": "Time",
+              "Value": "MB"
+            }
+          }
+        }
+      ],
+      "type": "timeseries"
     },
     {
       "collapsed": false,
@@ -208,7 +319,7 @@
       },
       "id": 21,
       "panels": [],
-      "title": "Devices Info",
+      "title": "Routers & Devices Info (May Be Device Specific)",
       "type": "row"
     },
     {
@@ -410,7 +521,7 @@
       },
       "id": 20,
       "panels": [],
-      "title": "Map + IP address details",
+      "title": "Map + IP address details (May Be Device And IP Specific)",
       "type": "row"
     },
     {
@@ -672,124 +783,7 @@
                   "check": {
                     "operation": "eq",
                     "property": "name",
-                    "value": "India"
-                  },
-                  "style": {
-                    "color": {
-                      "fixed": "#FADE2A"
-                    },
-                    "opacity": 0.5,
-                    "rotation": {
-                      "fixed": 0,
-                      "max": 360,
-                      "min": -360,
-                      "mode": "mod"
-                    },
-                    "size": {
-                      "fixed": 5,
-                      "max": 15,
-                      "min": 2
-                    },
-                    "symbol": {
-                      "fixed": "img/icons/marker/circle.svg",
-                      "mode": "fixed"
-                    },
-                    "symbolAlign": {
-                      "horizontal": "center",
-                      "vertical": "center"
-                    },
-                    "textConfig": {
-                      "fontSize": 12,
-                      "offsetX": 0,
-                      "offsetY": 0,
-                      "textAlign": "center",
-                      "textBaseline": "middle"
-                    }
-                  }
-                },
-                {
-                  "check": {
-                    "operation": "eq",
-                    "property": "name",
                     "value": "Syria"
-                  },
-                  "style": {
-                    "color": {
-                      "fixed": "#FADE2A"
-                    },
-                    "opacity": 0.5,
-                    "rotation": {
-                      "fixed": 0,
-                      "max": 360,
-                      "min": -360,
-                      "mode": "mod"
-                    },
-                    "size": {
-                      "fixed": 5,
-                      "max": 15,
-                      "min": 2
-                    },
-                    "symbol": {
-                      "fixed": "img/icons/marker/circle.svg",
-                      "mode": "fixed"
-                    },
-                    "symbolAlign": {
-                      "horizontal": "center",
-                      "vertical": "center"
-                    },
-                    "textConfig": {
-                      "fontSize": 12,
-                      "offsetX": 0,
-                      "offsetY": 0,
-                      "textAlign": "center",
-                      "textBaseline": "middle"
-                    }
-                  }
-                },
-                {
-                  "check": {
-                    "operation": "eq",
-                    "property": "name",
-                    "value": "Eritrea"
-                  },
-                  "style": {
-                    "color": {
-                      "fixed": "#FADE2A"
-                    },
-                    "opacity": 0.5,
-                    "rotation": {
-                      "fixed": 0,
-                      "max": 360,
-                      "min": -360,
-                      "mode": "mod"
-                    },
-                    "size": {
-                      "fixed": 5,
-                      "max": 15,
-                      "min": 2
-                    },
-                    "symbol": {
-                      "fixed": "img/icons/marker/circle.svg",
-                      "mode": "fixed"
-                    },
-                    "symbolAlign": {
-                      "horizontal": "center",
-                      "vertical": "center"
-                    },
-                    "textConfig": {
-                      "fontSize": 12,
-                      "offsetX": 0,
-                      "offsetY": 0,
-                      "textAlign": "center",
-                      "textBaseline": "middle"
-                    }
-                  }
-                },
-                {
-                  "check": {
-                    "operation": "eq",
-                    "property": "name",
-                    "value": "Myanmar"
                   },
                   "style": {
                     "color": {
@@ -974,7 +968,6 @@
         }
       ],
       "title": "IPs Enriched (GeoIP, ASN)",
-      "transparent": true,
       "type": "geomap"
     },
     {
@@ -1009,11 +1002,36 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Organisation Name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 181
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Host Name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 301
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
-        "w": 7,
+        "w": 8,
         "x": 16,
         "y": 17
       },
@@ -1029,7 +1047,8 @@
           "show": false
         },
         "frameIndex": 0,
-        "showHeader": true
+        "showHeader": true,
+        "sortBy": []
       },
       "pluginVersion": "11.5.2",
       "targets": [
@@ -1076,7 +1095,94 @@
           }
         }
       ],
-      "transparent": true,
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "P951FEA4DE68E13C5"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 23
+      },
+      "id": 33,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.5.2",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "P951FEA4DE68E13C5"
+          },
+          "query": "from(bucket: \"network-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"netflow\")\n  |> filter(fn: (r) => r._field == \"in_bytes\" or r._field == \"src\" or r._field == \"dst\")\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\n  |> filter(fn: (r) => r.src =~ /^${user_input_ip_address:regex}$/ or r.dst =~ /^${user_input_ip_address:regex}$/)\n  |> group(columns: [\"dst\", \"src\"])\n  |> aggregateWindow(every: 1m, fn: sum, column: \"in_bytes\", createEmpty: false)\n  |> map(fn: (r) => ({ r with in_bytes: float(v: r.in_bytes) / 1024.0 / 1024.0 }))\n  |> keep(columns: [\"_time\", \"dst\", \"src\", \"in_bytes\"])\n  |> group()\n  ",
+          "refId": "A"
+        }
+      ],
+      "title": "IP Specific Search (Incoming and Outgoing Traffic)",
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "includeByName": {},
+            "indexByName": {
+              "_time": 0,
+              "dst": 2,
+              "in_bytes": 3,
+              "src": 1
+            },
+            "renameByName": {
+              "_time": "Time",
+              "dst": "Destination IP",
+              "in_bytes": "Transferred MB",
+              "src": "Source IP"
+            }
+          }
+        }
+      ],
       "type": "table"
     },
     {
@@ -1089,7 +1195,7 @@
       },
       "id": 26,
       "panels": [],
-      "title": "Total Traffic",
+      "title": "Total Traffic (May Be Device Specific)",
       "type": "row"
     },
     {
@@ -1422,7 +1528,7 @@
       },
       "id": 24,
       "panels": [],
-      "title": "Distribution of IPs",
+      "title": "Distribution of IPs (May Be Device Specific)",
       "type": "row"
     },
     {
@@ -1563,7 +1669,7 @@
       },
       "id": 3,
       "panels": [],
-      "title": "Traffic Flows",
+      "title": "Traffic Flows (May Be Device Specific)",
       "type": "row"
     },
     {
@@ -1804,8 +1910,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1896,8 +2001,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1988,8 +2092,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2084,8 +2187,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -2146,11 +2248,11 @@
           "type": "barchart"
         }
       ],
-      "title": "Top IPs",
+      "title": "Top IPs (May Be Device Specific)",
       "type": "row"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2158,293 +2260,293 @@
         "y": 60
       },
       "id": 2,
-      "panels": [],
-      "title": "Other Info",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "uid": "eefclfikclvr4d"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 7,
-        "w": 13,
-        "x": 0,
-        "y": 61
-      },
-      "id": 16,
-      "options": {
-        "infinitePan": false,
-        "inlineEditing": false,
-        "panZoom": false,
-        "root": {
-          "background": {
-            "color": {
-              "fixed": "transparent"
-            },
-            "image": {
-              "fixed": ""
-            }
-          },
-          "border": {
-            "color": {
-              "fixed": "dark-green"
-            }
-          },
-          "constraint": {
-            "horizontal": "left",
-            "vertical": "top"
-          },
-          "elements": [
-            {
-              "background": {
-                "color": {
-                  "fixed": "transparent"
-                }
-              },
-              "border": {
-                "color": {
-                  "fixed": "text"
-                },
-                "radius": 20,
-                "width": 0
-              },
-              "config": {
-                "align": "center",
-                "color": {
-                  "fixed": "text"
-                },
-                "size": 16,
-                "text": {
-                  "field": "last_checked_devices",
-                  "fixed": "Update Devices",
-                  "mode": "field"
-                },
-                "valign": "middle"
-              },
-              "constraint": {
-                "horizontal": "left",
-                "vertical": "top"
-              },
-              "links": [],
-              "name": "devices_last_update_time",
-              "oneClickMode": "off",
-              "placement": {
-                "height": 50,
-                "left": 482,
-                "rotation": 0,
-                "top": 135,
-                "width": 260
-              },
-              "type": "text"
-            },
-            {
-              "background": {
-                "color": {
-                  "fixed": "transparent"
-                }
-              },
-              "border": {
-                "color": {
-                  "fixed": "text"
-                },
-                "radius": 20,
-                "width": 0
-              },
-              "config": {
-                "align": "center",
-                "color": {
-                  "fixed": "text"
-                },
-                "size": 16,
-                "text": {
-                  "field": "last_checked_routers",
-                  "fixed": "Update Devices",
-                  "mode": "field"
-                },
-                "valign": "middle"
-              },
-              "constraint": {
-                "horizontal": "left",
-                "vertical": "top"
-              },
-              "links": [],
-              "name": "routers_last_update_time",
-              "oneClickMode": "off",
-              "placement": {
-                "height": 50,
-                "left": 482,
-                "rotation": 0,
-                "top": 47,
-                "width": 260
-              },
-              "type": "text"
-            },
-            {
-              "background": {
-                "color": {
-                  "fixed": "transparent"
-                }
-              },
-              "border": {
-                "color": {
-                  "fixed": "text"
-                },
-                "radius": 20,
-                "width": 6
-              },
-              "config": {
-                "align": "center",
-                "color": {
-                  "fixed": "text"
-                },
-                "size": 16,
-                "text": {
-                  "fixed": "Last Time Updated Data for Devices",
-                  "mode": "fixed"
-                },
-                "valign": "middle"
-              },
-              "constraint": {
-                "horizontal": "left",
-                "vertical": "top"
-              },
-              "links": [],
-              "name": "Text devices",
-              "oneClickMode": "off",
-              "placement": {
-                "height": 50,
-                "left": 114,
-                "rotation": 0,
-                "top": 135,
-                "width": 353
-              },
-              "type": "text"
-            },
-            {
-              "background": {
-                "color": {
-                  "fixed": "transparent"
-                }
-              },
-              "border": {
-                "color": {
-                  "fixed": "text"
-                },
-                "radius": 20,
-                "width": 6
-              },
-              "config": {
-                "align": "center",
-                "color": {
-                  "fixed": "text"
-                },
-                "size": 16,
-                "text": {
-                  "fixed": "Last Time Updated Data for Routers",
-                  "mode": "fixed"
-                },
-                "valign": "middle"
-              },
-              "constraint": {
-                "horizontal": "left",
-                "vertical": "top"
-              },
-              "links": [],
-              "name": "Text routers",
-              "oneClickMode": "off",
-              "placement": {
-                "height": 50,
-                "left": 114,
-                "rotation": 0,
-                "top": 47,
-                "width": 353
-              },
-              "type": "text"
-            }
-          ],
-          "name": "Element 1741555801864",
-          "oneClickMode": "off",
-          "placement": {
-            "height": 100,
-            "left": 0,
-            "rotation": 0,
-            "top": 0,
-            "width": 100
-          },
-          "type": "frame"
-        },
-        "showAdvancedTypes": false
-      },
-      "pluginVersion": "11.5.2",
-      "targets": [
+      "panels": [
         {
-          "columns": [],
-          "filters": [],
-          "format": "table",
-          "global_query_id": "",
-          "parser": "backend",
-          "refId": "A",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "url": "http://flask_app:5000/api/update_routers",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
-        },
-        {
-          "columns": [],
           "datasource": {
-            "type": "yesoreyeram-infinity-datasource",
             "uid": "eefclfikclvr4d"
           },
-          "filters": [],
-          "format": "table",
-          "global_query_id": "",
-          "hide": false,
-          "parser": "backend",
-          "refId": "B",
-          "root_selector": "",
-          "source": "url",
-          "type": "json",
-          "url": "http://flask_app:5000/api/update_devices",
-          "url_options": {
-            "data": "",
-            "method": "GET"
-          }
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 7,
+            "w": 13,
+            "x": 0,
+            "y": 61
+          },
+          "id": 16,
+          "options": {
+            "infinitePan": false,
+            "inlineEditing": false,
+            "panZoom": false,
+            "root": {
+              "background": {
+                "color": {
+                  "fixed": "transparent"
+                },
+                "image": {
+                  "fixed": ""
+                }
+              },
+              "border": {
+                "color": {
+                  "fixed": "dark-green"
+                }
+              },
+              "constraint": {
+                "horizontal": "left",
+                "vertical": "top"
+              },
+              "elements": [
+                {
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "radius": 20,
+                    "width": 0
+                  },
+                  "config": {
+                    "align": "center",
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "size": 16,
+                    "text": {
+                      "field": "last_checked_devices",
+                      "fixed": "Update Devices",
+                      "mode": "field"
+                    },
+                    "valign": "middle"
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "links": [],
+                  "name": "devices_last_update_time",
+                  "oneClickMode": "off",
+                  "placement": {
+                    "height": 50,
+                    "left": 482,
+                    "rotation": 0,
+                    "top": 135,
+                    "width": 260
+                  },
+                  "type": "text"
+                },
+                {
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "radius": 20,
+                    "width": 0
+                  },
+                  "config": {
+                    "align": "center",
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "size": 16,
+                    "text": {
+                      "field": "last_checked_routers",
+                      "fixed": "Update Devices",
+                      "mode": "field"
+                    },
+                    "valign": "middle"
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "links": [],
+                  "name": "routers_last_update_time",
+                  "oneClickMode": "off",
+                  "placement": {
+                    "height": 50,
+                    "left": 482,
+                    "rotation": 0,
+                    "top": 47,
+                    "width": 260
+                  },
+                  "type": "text"
+                },
+                {
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "radius": 20,
+                    "width": 6
+                  },
+                  "config": {
+                    "align": "center",
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "size": 16,
+                    "text": {
+                      "fixed": "Last Time Updated Data for Devices",
+                      "mode": "fixed"
+                    },
+                    "valign": "middle"
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "links": [],
+                  "name": "Text devices",
+                  "oneClickMode": "off",
+                  "placement": {
+                    "height": 50,
+                    "left": 114,
+                    "rotation": 0,
+                    "top": 135,
+                    "width": 353
+                  },
+                  "type": "text"
+                },
+                {
+                  "background": {
+                    "color": {
+                      "fixed": "transparent"
+                    }
+                  },
+                  "border": {
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "radius": 20,
+                    "width": 6
+                  },
+                  "config": {
+                    "align": "center",
+                    "color": {
+                      "fixed": "text"
+                    },
+                    "size": 16,
+                    "text": {
+                      "fixed": "Last Time Updated Data for Routers",
+                      "mode": "fixed"
+                    },
+                    "valign": "middle"
+                  },
+                  "constraint": {
+                    "horizontal": "left",
+                    "vertical": "top"
+                  },
+                  "links": [],
+                  "name": "Text routers",
+                  "oneClickMode": "off",
+                  "placement": {
+                    "height": 50,
+                    "left": 114,
+                    "rotation": 0,
+                    "top": 47,
+                    "width": 353
+                  },
+                  "type": "text"
+                }
+              ],
+              "name": "Element 1741555801864",
+              "oneClickMode": "off",
+              "placement": {
+                "height": 100,
+                "left": 0,
+                "rotation": 0,
+                "top": 0,
+                "width": 100
+              },
+              "type": "frame"
+            },
+            "showAdvancedTypes": false
+          },
+          "pluginVersion": "11.5.2",
+          "targets": [
+            {
+              "columns": [],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "parser": "backend",
+              "refId": "A",
+              "root_selector": "",
+              "source": "url",
+              "type": "json",
+              "url": "http://flask_app:5000/api/update_routers",
+              "url_options": {
+                "data": "",
+                "method": "GET"
+              }
+            },
+            {
+              "columns": [],
+              "datasource": {
+                "type": "yesoreyeram-infinity-datasource",
+                "uid": "eefclfikclvr4d"
+              },
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "hide": false,
+              "parser": "backend",
+              "refId": "B",
+              "root_selector": "",
+              "source": "url",
+              "type": "json",
+              "url": "http://flask_app:5000/api/update_devices",
+              "url_options": {
+                "data": "",
+                "method": "GET"
+              }
+            }
+          ],
+          "title": "Check Info",
+          "transparent": true,
+          "type": "canvas"
         }
       ],
-      "title": "Check Info",
-      "transparent": true,
-      "type": "canvas"
+      "title": "Other Info",
+      "type": "row"
     }
   ],
   "preload": false,
-  "refresh": "",
+  "refresh": "30s",
   "schemaVersion": 40,
   "tags": [],
   "templating": {
@@ -2532,13 +2634,13 @@
     ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "Main Dashboard",
   "uid": "ceen9fgo73wu8a",
-  "version": 82,
+  "version": 90,
   "weekStart": ""
 }

@@ -201,7 +201,7 @@ def route_get_ip_details():
 @main_bp.route('/block/<rpi_mac>/<device_mac>')
 @admin_required
 def route_block_device(rpi_mac, device_mac):
-	ssh_block_device(rpi_mac=rpi_mac, device_mac=device_mac)
+	result = ssh_block_device(rpi_mac=rpi_mac, device_mac=device_mac)
 
 	flash(result, "info")
 	return redirect(url_for("main.dashboard"))
@@ -210,7 +210,7 @@ def route_block_device(rpi_mac, device_mac):
 @main_bp.route("/unblock/<rpi_mac>/<device_mac>")
 @admin_required
 def route_unblock_device(rpi_mac, device_mac):
-	ssh_unblock_device(rpi_mac=rpi_mac, device_mac=device_mac)
+	result = ssh_unblock_device(rpi_mac=rpi_mac, device_mac=device_mac)
 
 	flash(result, "info")
 	return redirect(url_for("main.dashboard"))

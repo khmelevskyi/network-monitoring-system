@@ -29,7 +29,11 @@ def ssh_block_device(rpi_mac, device_mac=None, device_local_ip=None):
 	if device_mac:
 		device = Device.query.filter_by(mac_address=device_mac).first()
 	elif device_local_ip:
-		device = Device.query.filter_by(local_ip_address=device_local_ip).last()
+		device = Device.query.filter_by(
+			local_ip_address=device_local_ip
+			).order_by(
+				Device.last_seen_online.desc()
+				).first()
 
 	if not device:
 		flash("Device not found", "danger")
@@ -39,6 +43,7 @@ def ssh_block_device(rpi_mac, device_mac=None, device_local_ip=None):
 		flash("Device is already blocked", "warning")
 		return redirect(url_for("main.dashboard"))
 
+	device_mac = device.mac_address
 	ip = router.public_ip_address  # Using local IP for internal SSH access (demo purposes)
 	username = router.ssh_username
 	ssh_key_path = SSH_PRIVATE_KEY_PATH
@@ -52,6 +57,8 @@ def ssh_block_device(rpi_mac, device_mac=None, device_local_ip=None):
 
 	device.if_blocked = True
 	db.session.commit()
+
+	return result
 
 
 
@@ -82,3 +89,5 @@ def ssh_unblock_device(rpi_mac, device_mac):
 
 	device.if_blocked = False
 	db.session.commit()
+
+	return result

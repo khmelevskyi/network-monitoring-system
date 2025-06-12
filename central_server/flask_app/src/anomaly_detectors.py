@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 from src.ssh_client import ssh_block_device
-from src.models import db, Device, Anomaly_Alert, Custom_IP_List_Entry
+from src.models import db, Device, Anomaly_Alert, Public_IP_Detail, Custom_IP_List_Entry
 from src.influxdb_funcs import (flux_get_data_for_ip_entropy_check,
 								flux_get_data_for_botnet_activity_check,
 								flux_get_suricata_alerts,
@@ -241,8 +241,8 @@ def check_blacklisted_connections():
 
 def check_for_ips_from_restricted_countried():
 	# Define country lists
-	banned_countries = {"RU": "Russia", "KP": "North Korea", "IR": "Iran"}
-	suspicious_countries = {"CN": "China", "BY": "Belarus", "SY": "Syria", "VE": "Venezuela"}
+	banned_countries = {"RU": "Russia", "KP": "North Korea", "IR": "Iran", "BY": "Belarus"}
+	suspicious_countries = {"CN": "China", "SY": "Syria"}
 
 	# Get all local device IPs
 	device_ips = db.session.query(Device.local_ip_address).all()
@@ -271,8 +271,7 @@ def check_for_ips_from_restricted_countried():
 			recent_time_threshold = datetime.utcnow() - timedelta(seconds=3600)
 			existing = Anomaly_Alert.query.filter_by(
 				alert_type="geoip_country_restricted",
-				src_ip=src_ip,
-				dst_ip=dst_ip
+				src_ip=src_ip
 			).filter(Anomaly_Alert.alert_time >= recent_time_threshold).first()
 
 			if existing:

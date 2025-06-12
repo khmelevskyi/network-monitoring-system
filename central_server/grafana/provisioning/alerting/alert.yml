@@ -446,3 +446,93 @@ groups:
           isPaused: false
           notification_settings:
             receiver: telegram bot
+
+
+
+
+
+    # Connection to an IP from a restricted country
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: yytg1bg8hih7bh
+          title: Connection to an IP from a restricted country
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(*) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type = 'geoip_country_restricted'
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Connection to an IP address from a restricted country detected
+                Alert Severity Level: Critical
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot

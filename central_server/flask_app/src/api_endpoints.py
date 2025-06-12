@@ -96,6 +96,12 @@ def api_update_devices():
 	return json.dumps({"status": "success", "last_checked_devices": str(datetime.utcnow())})
 
 
+def update_routers_and_devices():
+	api_update_routers()
+	api_update_devices()
+
+
+
 def api_get_ip_details(ip_to_lookup, device_ips, start_time, end_time):
 
 	if ip_to_lookup: # if needed IP detail only for one IP address

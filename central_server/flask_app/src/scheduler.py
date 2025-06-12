@@ -2,6 +2,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from src.ip_details_enrichment import enrich_ips
 from src.anomaly_detectors import check_all_anomalies
+from src.api_endpoints import update_routers_and_devices
 
 
 scheduler = BackgroundScheduler()
@@ -28,6 +29,14 @@ def start_scheduler(app):
 		trigger="interval",
 		minutes=1,
 		id="check_all_anomalies",
+		replace_existing=True
+	)
+
+	scheduler.add_job(
+		func=wrap_with_context(update_routers_and_devices),
+		trigger="interval",
+		minutes=1,
+		id="update_routers_and_devices",
 		replace_existing=True
 	)
 
