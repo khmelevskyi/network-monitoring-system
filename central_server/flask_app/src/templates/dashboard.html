@@ -1,0 +1,81 @@
+<!-- templates/admin.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary">Routers and Devices</h2>
+        <div>
+            <a href="{{ url_for('main.route_update_devices') }}" class="btn btn-info">Update Devices List</a>
+            <a href="{{ url_for('main.route_update_routers') }}" class="btn btn-info">Update Routers List</a>
+            <a href="{{ url_for('main.view_ip_lists') }}" class="btn btn-secondary">View IP whitelist/blacklist</a>
+            {% if current_user.role == 'admin' %}  
+                <a href="{{ url_for('main.admin_panel') }}" class="btn btn-secondary">Admin Panel</a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger">Logout</a>
+        </div>
+    </div>
+
+    <div class="card mb-4 shadow-sm">
+    <a href="http://127.0.0.1:3000/d/ceen9fgo73wu8a/main-dashboard" target="_blank" class="btn btn-primary">To Traffic Dashboard</a>
+    </div>
+
+    {% for router in routers %}
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Router: Local IP: {{ router.local_ip_address }} | Public IP: {{ router.public_ip_address}} | MAC: {{ router.mac_address }} | Username: {{ router.ssh_username }} | Description: {{ router.description }}</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>MAC Address</th>
+                            <th>Local IP</th>
+                            <th>Status</th>
+                            <th>Last Seen Active</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in router.devices | sort(attribute='last_seen_online', reverse=True) %}
+                            <tr>
+                                <td>{{ device.mac_address }}</td>
+                                <td>{{ device.local_ip_address }}</td>
+                                <td>
+                                    {% if device.if_blocked %}
+                                        <span class="badge bg-danger">Blocked</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Unblocked</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if device.last_seen_online %}
+                                        {{ device.last_seen_online | time_ago }}
+                                    {% else %}
+                                        <span class="badge bg-secondary">Never</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('main.route_block_device', rpi_mac=router.mac_address, device_mac=device.mac_address) }}" class="btn btn-warning btn-sm">Block</a>
+                                    <a href="{{ url_for('main.route_unblock_device', rpi_mac=router.mac_address, device_mac=device.mac_address) }}" class="btn btn-success btn-sm">Unblock</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Router Last Seen Section -->
+            <div class="card-footer">
+                <strong>Router Last Seen Active:</strong>
+                {% if router.last_seen_online %}
+                    {{ router.last_seen_online | time_ago }}
+                {% else %}
+                    <span class="badge bg-secondary">Never</span>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+

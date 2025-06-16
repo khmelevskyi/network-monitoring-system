@@ -173,3 +173,7 @@ cython_debug/
 
 # Custom
 network_probe/secrets/influxdb*
+central_server/secrets/influxdb*
+central_server/secrets/postgres*
+central_server/secrets/flaskapp*
+central_server/secrets/rpi*
