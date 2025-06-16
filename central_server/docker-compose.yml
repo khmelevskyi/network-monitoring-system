@@ -1,0 +1,95 @@
+version: '3.9'
+
+services:
+  influxdb:
+    image: influxdb:2
+    container_name: central_influxdb
+    restart: unless-stopped
+    ports:
+      - ${INFLUXDB_BIND_PORT}:8086
+    env_file:
+      .env
+    environment:
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+      - influxdb-config:/etc/influxdb2
+    secrets:
+      - influxdb-admin-token
+
+  postgres:
+    image: postgres:15
+    container_name: central_postgres
+    restart: unless-stopped
+    ports:
+      - ${POSTGRES_BIND_PORT}:5432
+    env_file:
+      .env
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    secrets:
+      - postgres-password
+
+  flask_app:
+    build:
+      context: ./flask_app
+      dockerfile: Dockerfile
+    image: custom-flaskapp:latest
+    container_name: central_flask_app
+    restart: unless-stopped
+    ports:
+      - ${FLASK_BIND_PORT}:5000
+    env_file:
+      .env
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+      SSH_PRIVATE_KEY_DOCKER_PATH: /run/secrets/ssh-private-key
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
+    volumes:
+      - ./flask_app/src:/flask_app/src
+      - ./flask_app/migrations:/flask_app/migrations
+    depends_on:
+      - influxdb
+      - postgres
+    secrets:
+      - postgres-password
+      - ssh-private-key
+      - influxdb-admin-token
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: central_grafana
+    restart: unless-stopped
+    ports:
+      - ${GRAFANA_BIND_PORT}:3000
+    env_file:
+      .env
+    environment:
+      INFLUXDB_INIT_ADMIN_TOKEN_FILE: /run/secrets/influxdb-admin-token
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      # - ./grafana/conf/defaults.ini:/usr/share/grafana/conf/defaults.ini
+    depends_on:
+      - influxdb
+    secrets:
+      - postgres-password
+      - influxdb-admin-token
+
+
+volumes:
+  influxdb-data:
+  influxdb-config:
+  postgres-data:
+  grafana-data:
+
+secrets:
+  influxdb-admin-token:
+    file: ${INFLUXDB_TOKEN_LOCAL_FILE}
+  postgres-password:
+    file: ${POSTGRES_PASSWORD_LOCAL_FILE}
+  ssh-private-key:
+    file: ${SSH_PRIVATE_KEY_LOCAL_PATH}

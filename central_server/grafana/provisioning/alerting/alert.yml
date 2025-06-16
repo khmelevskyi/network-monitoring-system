@@ -1,0 +1,538 @@
+apiVersion: 1
+groups:
+
+
+    # Low dst IP entropy
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: felm0bd1rs6psf
+          title: Low dst IPs entropy
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(*) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type = 'ips_entropy_anomaly'
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Possible data exfiltration or a big file upload
+                Too much traffic (>10MB) with low entropy(<1) of destination IP addresses detected
+                Alert Severity Level: Medium
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot
+
+
+
+
+    # Botnet activity
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: 5glm0dd1rv6ps8
+          title: Botnet activity
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(*) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type = 'potential_botnet_activity'
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Possible botnet activity with C2 server communication
+                More than 10 connections within the last 1 hour with equal intervals detected
+                Alert Severity Level: High
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot
+
+
+
+
+  # Botnet activity And Low dst IPs entropy
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: gybm4df1yvxpd9
+          title: Botnet activity & Low dst Ips entropy
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(DISTINCT alert_type) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type IN ('potential_botnet_activity', 'low_entropy_anomaly')
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 1
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Very high possibility of data exfiltration!
+                Regular communications and big data upload detected
+                Alert Severity Level: Critical
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot
+
+
+
+    # Suricata Alert
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: ui7m0rn6rs68jx
+          title: Suricata alert
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(*) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type = 'suricata'
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Detected an alert from Suricata
+                Possible cyberattack or an attempt to access a suspicious website
+                Alert Severity Level: High
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot
+
+
+
+
+    # Connection to a blacklisted IP 
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: jytv1bg1tjb3h4
+          title: Connection to a blacklisted IP
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(*) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type = 'blacklisted_ip'
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Connection to a blacklisted IP address detected
+                Alert Severity Level: Critical
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot
+
+
+
+
+
+    # Connection to an IP from a restricted country
+    - orgId: 1
+      name: Anomaly detections
+      folder: Anomaly detections
+      interval: 1m
+      rules:
+        - uid: yytg1bg8hih7bh
+          title: Connection to an IP from a restricted country
+          condition: minimum number of anomalies to alert
+          data:
+            - refId: number of anomalies detected in the last 1 minute
+              relativeTimeRange:
+                from: 300
+                to: 0
+              datasourceUid: P44368ADAD746BC27
+              model:
+                datasource:
+                    type: grafana-postgresql-datasource
+                    uid: P44368ADAD746BC27
+                editorMode: code
+                format: table
+                instant: false
+                intervalMs: 60000
+                maxDataPoints: 43200
+                range: true
+                rawQuery: true
+                rawSql: |-
+                    SELECT
+                      COUNT(*) AS value
+                    FROM anomaly_alerts
+                    WHERE alert_type = 'geoip_country_restricted'
+                      AND alert_time >= $__timeFrom();
+                refId: number of anomalies detected in the last 1 minute
+                sql:
+                    columns:
+                        - parameters: []
+                          type: function
+                    groupBy:
+                        - property:
+                            type: string
+                          type: groupBy
+                    limit: 50
+            - refId: minimum number of anomalies to alert
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: number of anomalies detected in the last 1 minute
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: minimum number of anomalies to alert
+                type: threshold
+          dashboardUid: ceen9fgo73wu8a
+          panelId: 32
+          noDataState: OK
+          execErrState: Error
+          for: 0m
+          annotations:
+            __dashboardUid__: ceen9fgo73wu8a
+            __panelId__: "32"
+            summary: |-
+
+                Connection to an IP address from a restricted country detected
+                Alert Severity Level: Critical
+
+                -----------------------------
+          labels: {}
+          isPaused: false
+          notification_settings:
+            receiver: telegram bot

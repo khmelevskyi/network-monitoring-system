@@ -1,0 +1,58 @@
+version: "3.9"
+
+volumes:
+  suricata_logs:
+
+services:
+  telegraf:
+    build:
+      context: ./telegraf
+      dockerfile: Dockerfile
+    image: custom-telegraf:latest
+    container_name: rpi_telegraf
+    user: root
+    restart: unless-stopped
+    env_file:
+      - .env
+    secrets:
+      - influxdb-token
+    volumes:
+      - ./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - suricata_logs:/var/log/suricata:ro
+    depends_on:
+      - suricata
+      - softflowd
+    network_mode: "host"
+
+  suricata:
+    build:
+      context: ./suricata
+      dockerfile: Dockerfile
+    image: custom-suricata:latest
+    container_name: rpi_suricata
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - SYS_NICE
+      - NET_RAW
+    volumes:
+      - suricata_logs:/var/log/suricata
+      - /var/run/suricata:/var/run/suricata
+    command: ["-i", "wlan0"]
+    restart: unless-stopped
+
+  softflowd:
+    build:
+      context: ./softflowd
+      dockerfile: Dockerfile
+    image: custom-soflowd:latest
+    container_name: rpi_softflowd
+    restart: unless-stopped
+    network_mode: "host"
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+secrets:
+  influxdb-token:
+    file: ${INFLUXDB_TOKEN_FILE}
